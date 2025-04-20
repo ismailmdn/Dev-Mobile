@@ -8,6 +8,10 @@
         android:id="@+id/homeFragment"
         android:name="com.example.projetguermah.fragments.HomeFragment"
         android:label="Home" />
+    <fragment
+        android:id="@+id/trasactionFragment"
+        android:name="com.example.projetguermah.fragments.TransactionFragment"
+        android:label="Transaction" />
 
     <fragment
         android:id="@+id/profileFragment"
