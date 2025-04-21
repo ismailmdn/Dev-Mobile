@@ -96,8 +96,12 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
             return;
         }
         
-        db.collection("transactions")
-                .whereEqualTo("userId", mAuth.getCurrentUser().getUid())
+        String userId = mAuth.getCurrentUser().getUid();
+        
+        // Use nested collection structure: /transaction/{userId}/transactions/
+        db.collection("transaction")
+                .document(userId)
+                .collection("transactions")
                 .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -219,26 +223,30 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
             return;
         }
 
+        String userId = mAuth.getCurrentUser().getUid();
+        
         // Show loading indicator
         showLoading(true);
         
         // Create transaction object
         Map<String, Object> transactionData = new HashMap<>();
-        transactionData.put("userId", mAuth.getCurrentUser().getUid());
+        // No need to store userId inside the document anymore since it's in the path
         transactionData.put("title", title);
         transactionData.put("amount", amount);
         transactionData.put("date", date);
         transactionData.put("type", type);
         transactionData.put("category", category);
         
-        // Save to Firestore
-        db.collection("transactions")
+        // Save to Firestore using nested collection structure
+        db.collection("transaction")
+            .document(userId)
+            .collection("transactions")
             .add(transactionData)
             .addOnSuccessListener(documentReference -> {
                 // Create local transaction object and add to list
                 Transaction newTransaction = new Transaction(
                         documentReference.getId(),
-                        mAuth.getCurrentUser().getUid(),
+                        userId,
                         title,
                         amount,
                         date,
