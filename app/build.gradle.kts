@@ -48,7 +48,11 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
-    
+
+    // MPAndroidChart
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+
     // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
