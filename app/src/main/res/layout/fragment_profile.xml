@@ -1,23 +1,208 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/profileFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="#FFFFFF"
+    tools:context=".ProfileFragment">
 
+    <!-- Header: Username's Budget + Dots Icon -->
     <TextView
+        android:id="@+id/budgetTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Profile"
-        android:textSize="24sp"
-        android:layout_marginBottom="32dp"/>
+        android:text="Username's Budget"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#000000" />
 
-    <Button
-        android:id="@+id/logout_button"
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/menuIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/dots"
+        android:contentDescription="Menu" />
+
+    <!-- Popup Menu -->
+    <LinearLayout
+        android:id="@+id/menuPopup"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Logout"
-        android:padding="16dp"/>
+        android:layout_alignEnd="@id/menuIcon"
+        android:layout_below="@id/menuIcon"
+        android:orientation="vertical"
+        android:background="#FFFFFF"
+        android:padding="8dp"
+        android:elevation="6dp"
+        android:visibility="gone">
 
-</LinearLayout>
+        <Button
+            android:id="@+id/logoutButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Logout" />
+    </LinearLayout>
+
+    <!-- Month and Year Selector -->
+    <LinearLayout
+        android:id="@+id/monthYearSelector"
+        android:layout_below="@id/budgetTitle"
+        android:layout_marginTop="24dp"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:background="@drawable/bg_rounded_box"
+        android:padding="10dp"
+        android:gravity="center_vertical">
+
+        <!-- Spinner for Month -->
+        <Spinner
+            android:id="@+id/monthSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <!-- TextView for Year -->
+        <TextView
+            android:id="@+id/yearText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2025"
+            android:textColor="#000000"
+            android:textSize="16sp"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
+    <!-- Budget Label -->
+    <TextView
+        android:id="@+id/budgetLabel"
+        android:layout_below="@id/monthYearSelector"
+        android:layout_marginTop="32dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="The Budget:"
+        android:textSize="18sp"
+        android:textColor="#000000"
+        android:textStyle="bold" />
+
+    <!-- Budget Value and Edit Icon -->
+    <LinearLayout
+        android:id="@+id/budgetValueContainer"
+        android:layout_below="@id/budgetLabel"
+        android:layout_marginTop="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/budgetValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="$1234.56"
+            android:textSize="22sp"
+            android:textColor="#333333" />
+
+        <ImageView
+            android:id="@+id/editIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/edit"
+            android:contentDescription="Edit Budget" />
+    </LinearLayout>
+
+    <!-- Expenses -->
+    <TextView
+        android:id="@+id/expensesLabel"
+        android:layout_below="@id/budgetValueContainer"
+        android:layout_marginTop="24dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Expenses:"
+        android:textSize="18sp"
+        android:textColor="#000000"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/expensesValue"
+        android:layout_below="@id/expensesLabel"
+        android:layout_marginTop="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="$567.89"
+        android:textSize="20sp"
+        android:textColor="#FF4444" />
+
+    <!-- Savings -->
+    <TextView
+        android:id="@+id/savingsLabel"
+        android:layout_below="@id/expensesValue"
+        android:layout_marginTop="24dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Savings:"
+        android:textSize="18sp"
+        android:textColor="#000000"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/savingsValue"
+        android:layout_below="@id/savingsLabel"
+        android:layout_marginTop="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="$666.67"
+        android:textSize="20sp"
+        android:textColor="#4CAF50" />
+
+    <!-- Edit Budget Popup -->
+    <RelativeLayout
+        android:id="@+id/editPopup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000"
+        android:visibility="gone"
+        android:elevation="10dp">
+
+        <LinearLayout
+            android:layout_centerInParent="true"
+            android:orientation="vertical"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_rounded_box"
+            android:padding="16dp">
+
+            <EditText
+                android:id="@+id/editBudgetInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter new budget"
+                android:inputType="numberDecimal" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:gravity="end">
+
+                <Button
+                    android:id="@+id/saveBudgetButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Save" />
+
+                <Button
+                    android:id="@+id/cancelBudgetButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cancel"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
+</RelativeLayout>
