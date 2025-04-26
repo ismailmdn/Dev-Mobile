@@ -2,12 +2,17 @@ package com.example.projetguermah;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
+import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -30,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import android.app.Activity;
 
 public class TransactionFragment extends Fragment implements TransactionAdapter.OnTransactionClickListener {
 
@@ -43,6 +49,7 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
     private FloatingActionButton fabAddTransaction;
     private Calendar selectedDate;
     private SimpleDateFormat dateFormat;
+    private static final int ADD_TRANSACTION_REQUEST_CODE = 1001;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -74,8 +81,11 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
         adapter = new TransactionAdapter(transactions, this);
         recyclerView.setAdapter(adapter);
 
-        // Setup FAB
-        fabAddTransaction.setOnClickListener(v -> showAddTransactionDialog());
+        // Setup FAB to launch AddTransactionActivity
+        fabAddTransaction.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), AddTransactionActivity.class);
+            startActivityForResult(intent, ADD_TRANSACTION_REQUEST_CODE);
+        });
 
         // Check if user is logged in
         if (mAuth.getCurrentUser() == null) {
@@ -85,6 +95,16 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
 
         // Load transactions
         loadTransactions();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        if (requestCode == ADD_TRANSACTION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            // Refresh transactions list after adding a new one
+            loadTransactions();
+        }
     }
 
     private void loadTransactions() {
@@ -136,16 +156,68 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
         View dialogView = inflater.inflate(R.layout.dialog_add_transaction, null);
         dialogBuilder.setView(dialogView);
 
-        // Initialize dialog views
-        TextInputEditText titleInput = dialogView.findViewById(R.id.et_transaction_title);
-        TextInputEditText amountInput = dialogView.findViewById(R.id.et_transaction_amount);
-        TextInputEditText categoryInput = dialogView.findViewById(R.id.et_transaction_category);
-        RadioGroup typeRadioGroup = dialogView.findViewById(R.id.rg_transaction_type);
-        Button dateButton = dialogView.findViewById(R.id.btn_pick_date);
+        // Create dialog
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.show();
 
-        // Set current date as default
+        // Initialize dialog views
+        EditText amountInput = dialogView.findViewById(R.id.et_transaction_amount);
+        EditText noteInput = dialogView.findViewById(R.id.et_transaction_note);
+        Button dateButton = dialogView.findViewById(R.id.btn_date);
+        Button timeButton = dialogView.findViewById(R.id.btn_time);
+        Button expendButton = dialogView.findViewById(R.id.btn_expend);
+        Button incomeButton = dialogView.findViewById(R.id.btn_income);
+        Button loanButton = dialogView.findViewById(R.id.btn_loan);
+        TextView cancelButton = dialogView.findViewById(R.id.btn_cancel);
+        TextView saveButton = dialogView.findViewById(R.id.btn_save);
+
+        // Category views - Row 1
+        View foodCategory = dialogView.findViewById(R.id.category_food);
+        View socialCategory = dialogView.findViewById(R.id.category_social);
+        View trafficCategory = dialogView.findViewById(R.id.category_traffic);
+        View shoppingCategory = dialogView.findViewById(R.id.category_shopping);
+        
+        // Category views - Row 2
+        View groceryCategory = dialogView.findViewById(R.id.category_grocery);
+        View educationCategory = dialogView.findViewById(R.id.category_education);
+        View billsCategory = dialogView.findViewById(R.id.category_bills);
+        View rentalsCategory = dialogView.findViewById(R.id.category_rentals);
+        
+        // Category views - Row 3
+        View medicalCategory = dialogView.findViewById(R.id.category_medical);
+        View investmentCategory = dialogView.findViewById(R.id.category_investment);
+        View giftCategory = dialogView.findViewById(R.id.category_gift);
+        View otherCategory = dialogView.findViewById(R.id.category_other);
+
+        // Set current date and time as default
         selectedDate = Calendar.getInstance();
-        dateButton.setText("Date: " + dateFormat.format(selectedDate.getTime()));
+        updateDateTimeButtons(dateButton, timeButton);
+
+        // Initialize transaction type (default is Expend)
+        final String[] transactionType = {"expense"};
+        final String[] selectedCategory = {"Food"}; // Default category
+
+        // Setup transaction type toggle
+        expendButton.setOnClickListener(v -> {
+            resetTransactionTypes(expendButton, incomeButton, loanButton);
+            expendButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1D4752")));
+            expendButton.setTextColor(Color.WHITE);
+            transactionType[0] = "expense";
+        });
+
+        incomeButton.setOnClickListener(v -> {
+            resetTransactionTypes(expendButton, incomeButton, loanButton);
+            incomeButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1D4752")));
+            incomeButton.setTextColor(Color.WHITE);
+            transactionType[0] = "income";
+        });
+
+        loanButton.setOnClickListener(v -> {
+            resetTransactionTypes(expendButton, incomeButton, loanButton);
+            loanButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1D4752")));
+            loanButton.setTextColor(Color.WHITE);
+            transactionType[0] = "loan";
+        });
 
         // Setup date picker
         dateButton.setOnClickListener(v -> {
@@ -155,7 +227,7 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
                         selectedDate.set(Calendar.YEAR, year);
                         selectedDate.set(Calendar.MONTH, month);
                         selectedDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                        dateButton.setText("Date: " + dateFormat.format(selectedDate.getTime()));
+                        updateDateTimeButtons(dateButton, timeButton);
                     },
                     selectedDate.get(Calendar.YEAR),
                     selectedDate.get(Calendar.MONTH),
@@ -164,25 +236,91 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
             datePickerDialog.show();
         });
 
-        // Build the dialog with Save and Cancel buttons
-        AlertDialog dialog = dialogBuilder.setPositiveButton("Save", null)
-                .setNegativeButton("Cancel", (dialog1, which) -> dialog1.dismiss())
-                .create();
+        // Setup time picker
+        timeButton.setOnClickListener(v -> {
+            TimePickerDialog timePickerDialog = new TimePickerDialog(
+                    requireContext(),
+                    (view, hourOfDay, minute) -> {
+                        selectedDate.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                        selectedDate.set(Calendar.MINUTE, minute);
+                        updateDateTimeButtons(dateButton, timeButton);
+                    },
+                    selectedDate.get(Calendar.HOUR_OF_DAY),
+                    selectedDate.get(Calendar.MINUTE),
+                    true
+            );
+            timePickerDialog.show();
+        });
 
-        dialog.show();
+        // Setup category selection
+        View.OnClickListener categoryClickListener = v -> {
+            // Reset all categories
+            resetCategorySelection(
+                foodCategory, socialCategory, trafficCategory, shoppingCategory,
+                groceryCategory, educationCategory, billsCategory, rentalsCategory,
+                medicalCategory, investmentCategory, giftCategory, otherCategory
+            );
+            
+            // Highlight selected category
+            v.setSelected(true);
+            v.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#E0E0E0")));
+            
+            // Get selected category
+            int id = v.getId();
+            if (id == R.id.category_food) {
+                selectedCategory[0] = "Food";
+            } else if (id == R.id.category_social) {
+                selectedCategory[0] = "Social";
+            } else if (id == R.id.category_traffic) {
+                selectedCategory[0] = "Traffic";
+            } else if (id == R.id.category_shopping) {
+                selectedCategory[0] = "Shopping";
+            } else if (id == R.id.category_grocery) {
+                selectedCategory[0] = "Grocery";
+            } else if (id == R.id.category_education) {
+                selectedCategory[0] = "Education";
+            } else if (id == R.id.category_bills) {
+                selectedCategory[0] = "Bills";
+            } else if (id == R.id.category_rentals) {
+                selectedCategory[0] = "Rentals";
+            } else if (id == R.id.category_medical) {
+                selectedCategory[0] = "Medical";
+            } else if (id == R.id.category_investment) {
+                selectedCategory[0] = "Investment";
+            } else if (id == R.id.category_gift) {
+                selectedCategory[0] = "Gift";
+            } else if (id == R.id.category_other) {
+                selectedCategory[0] = "Other";
+            }
+        };
 
-        // Override the positive button click to prevent dismissal on validation error
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-            String title = titleInput.getText().toString().trim();
+        // Apply click listener to all categories
+        foodCategory.setOnClickListener(categoryClickListener);
+        socialCategory.setOnClickListener(categoryClickListener);
+        trafficCategory.setOnClickListener(categoryClickListener);
+        shoppingCategory.setOnClickListener(categoryClickListener);
+        groceryCategory.setOnClickListener(categoryClickListener);
+        educationCategory.setOnClickListener(categoryClickListener);
+        billsCategory.setOnClickListener(categoryClickListener);
+        rentalsCategory.setOnClickListener(categoryClickListener);
+        medicalCategory.setOnClickListener(categoryClickListener);
+        investmentCategory.setOnClickListener(categoryClickListener);
+        giftCategory.setOnClickListener(categoryClickListener);
+        otherCategory.setOnClickListener(categoryClickListener);
+
+        // Highlight the default category
+        foodCategory.setSelected(true);
+        foodCategory.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#E0E0E0")));
+
+        // Setup cancel button
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+
+        // Setup save button
+        saveButton.setOnClickListener(v -> {
             String amountStr = amountInput.getText().toString().trim();
-            String category = categoryInput.getText().toString().trim();
+            String note = noteInput.getText().toString().trim();
             
             // Validate inputs
-            if (title.isEmpty()) {
-                titleInput.setError("Title is required");
-                return;
-            }
-            
             if (amountStr.isEmpty()) {
                 amountInput.setError("Amount is required");
                 return;
@@ -200,20 +338,37 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
                 return;
             }
             
-            if (category.isEmpty()) {
-                categoryInput.setError("Category is required");
-                return;
-            }
-
-            // Get transaction type
-            String type = typeRadioGroup.getCheckedRadioButtonId() == R.id.rb_income ? "income" : "expense";
+            // Get title from note or use category as title
+            String title = note.isEmpty() ? selectedCategory[0] : note;
             
             // Save transaction
-            saveTransaction(title, amount, selectedDate.getTime(), type, category);
+            saveTransaction(title, amount, selectedDate.getTime(), transactionType[0], selectedCategory[0]);
             
             // Dismiss dialog
             dialog.dismiss();
         });
+    }
+
+    private void updateDateTimeButtons(Button dateButton, Button timeButton) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM, dd yyyy", Locale.getDefault());
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        
+        dateButton.setText(dateFormat.format(selectedDate.getTime()));
+        timeButton.setText(timeFormat.format(selectedDate.getTime()));
+    }
+
+    private void resetCategorySelection(View... categories) {
+        for (View category : categories) {
+            category.setSelected(false);
+            category.setBackgroundTintList(null);
+        }
+    }
+
+    private void resetTransactionTypes(Button... buttons) {
+        for (Button button : buttons) {
+            button.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
+            button.setTextColor(Color.parseColor("#757575"));
+        }
     }
 
     private void saveTransaction(String title, double amount, Date date, String type, String category) {

@@ -26,5 +26,10 @@
         <activity android:name=".MainActivity"
             android:exported="false" />
 
+        <!-- AddTransactionActivity -->
+        <activity android:name=".AddTransactionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ProjetGuermah.NoActionBar" />
+
     </application>
 </manifest>
