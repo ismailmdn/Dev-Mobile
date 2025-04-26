@@ -50,6 +50,7 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
     private Calendar selectedDate;
     private SimpleDateFormat dateFormat;
     private static final int ADD_TRANSACTION_REQUEST_CODE = 1001;
+    private static final int TRANSACTION_DETAILS_REQUEST_CODE = 1002;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -103,6 +104,9 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
         
         if (requestCode == ADD_TRANSACTION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             // Refresh transactions list after adding a new one
+            loadTransactions();
+        } else if (requestCode == TRANSACTION_DETAILS_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            // Refresh transactions list after potentially deleting a transaction
             loadTransactions();
         }
     }
@@ -442,8 +446,10 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
 
     @Override
     public void onTransactionClick(Transaction transaction) {
-        // TODO: Implement transaction details/editing
-        Toast.makeText(getContext(), "Transaction details will be implemented", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getActivity(), TransactionDetailsActivity.class);
+        intent.putExtra(TransactionDetailsActivity.EXTRA_TRANSACTION_ID, transaction.getId());
+        intent.putExtra(TransactionDetailsActivity.EXTRA_USER_ID, mAuth.getCurrentUser().getUid());
+        startActivityForResult(intent, TRANSACTION_DETAILS_REQUEST_CODE);
     }
 
     @Override

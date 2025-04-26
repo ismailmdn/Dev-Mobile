@@ -1,6 +1,8 @@
 package com.example.projetguermah;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +32,7 @@ public class TransactionsFragment extends Fragment implements TransactionAdapter
     private TransactionAdapter adapter;
     private List<Transaction> transactions;
     private FloatingActionButton fabAddTransaction;
+    private static final int TRANSACTION_DETAILS_REQUEST_CODE = 1002;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -135,8 +138,10 @@ public class TransactionsFragment extends Fragment implements TransactionAdapter
 
     @Override
     public void onTransactionClick(Transaction transaction) {
-        // TODO: Implement transaction details/editing
-        Toast.makeText(getContext(), "Transaction details will be implemented", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getActivity(), TransactionDetailsActivity.class);
+        intent.putExtra(TransactionDetailsActivity.EXTRA_TRANSACTION_ID, transaction.getId());
+        intent.putExtra(TransactionDetailsActivity.EXTRA_USER_ID, mAuth.getCurrentUser().getUid());
+        startActivityForResult(intent, TRANSACTION_DETAILS_REQUEST_CODE);
     }
 
     @Override
@@ -178,5 +183,15 @@ public class TransactionsFragment extends Fragment implements TransactionAdapter
                 showLoading(false);
                 showError("Failed to delete transaction: " + e.getMessage());
             });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        if (requestCode == TRANSACTION_DETAILS_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            // Refresh transactions list after potentially deleting a transaction
+            loadTransactions();
+        }
     }
 } 

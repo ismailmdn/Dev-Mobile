@@ -30,6 +30,11 @@
         <activity android:name=".AddTransactionActivity"
             android:exported="false"
             android:theme="@style/Theme.ProjetGuermah.NoActionBar" />
+            
+        <!-- TransactionDetailsActivity -->
+        <activity android:name=".TransactionDetailsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ProjetGuermah.NoActionBar" />
 
     </application>
 </manifest>
