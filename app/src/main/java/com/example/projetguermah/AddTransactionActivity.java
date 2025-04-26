@@ -2,25 +2,23 @@ package com.example.projetguermah;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import android.text.TextUtils;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -32,15 +30,13 @@ public class AddTransactionActivity extends AppCompatActivity {
     
     private EditText amountInput;
     private EditText noteInput;
-    private Button dateButton;
-    private Button timeButton;
-    private Button expendButton;
-    private Button incomeButton;
-    private TextView cancelButton;
-    private TextView saveButton;
-    
-    // Category views
-    private View[] categoryViews;
+    private MaterialButton dateButton;
+    private MaterialButton timeButton;
+    private MaterialButton expendButton;
+    private MaterialButton incomeButton;
+    private MaterialButton cancelButton;
+    private MaterialButton saveButton;
+    private RecyclerView categoriesGrid;
     
     private Calendar selectedDate;
     private String selectedCategory = "Food";
@@ -65,20 +61,20 @@ public class AddTransactionActivity extends AppCompatActivity {
         selectedDate = Calendar.getInstance();
         updateDateTimeButtons();
         
-        // Set up category selection
-        setupCategorySelection();
-        
         // Setup date and time pickers
         setupDateTimePickers();
         
         // Setup cancel and save buttons
         setupActionButtons();
+        
+        // Setup categories grid
+        setupCategoriesGrid();
     }
     
     private void initViews() {
         // Initialize main inputs
         amountInput = findViewById(R.id.et_transaction_amount);
-        noteInput = findViewById(R.id.et_transaction_note);
+        noteInput = findViewById(R.id.et_note);
         
         // Initialize buttons
         dateButton = findViewById(R.id.btn_date);
@@ -88,104 +84,40 @@ public class AddTransactionActivity extends AppCompatActivity {
         cancelButton = findViewById(R.id.btn_cancel);
         saveButton = findViewById(R.id.btn_save);
         
-        // Initialize category views
-        categoryViews = new View[] {
-            findViewById(R.id.category_food),
-            findViewById(R.id.category_social),
-            findViewById(R.id.category_traffic),
-            findViewById(R.id.category_shopping),
-            findViewById(R.id.category_grocery),
-            findViewById(R.id.category_education),
-            findViewById(R.id.category_bills),
-            findViewById(R.id.category_rentals),
-            findViewById(R.id.category_medical),
-            findViewById(R.id.category_investment),
-            findViewById(R.id.category_gift),
-            findViewById(R.id.category_other)
-        };
+        // Initialize categories grid
+        categoriesGrid = findViewById(R.id.categories_grid);
     }
     
     private void setupTransactionTypeToggle() {
         expendButton.setOnClickListener(v -> {
-            // Reset both buttons
-            expendButton.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
-            expendButton.setTextColor(Color.parseColor("#757575"));
-            incomeButton.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
-            incomeButton.setTextColor(Color.parseColor("#757575"));
-            
-            // Highlight expend button
             expendButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1D4752")));
             expendButton.setTextColor(Color.WHITE);
+            incomeButton.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
+            incomeButton.setTextColor(Color.parseColor("#757575"));
             transactionType = "expense";
         });
         
         incomeButton.setOnClickListener(v -> {
-            // Reset both buttons
-            expendButton.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
-            expendButton.setTextColor(Color.parseColor("#757575"));
-            incomeButton.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
-            incomeButton.setTextColor(Color.parseColor("#757575"));
-            
-            // Highlight income button
             incomeButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1D4752")));
             incomeButton.setTextColor(Color.WHITE);
+            expendButton.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
+            expendButton.setTextColor(Color.parseColor("#757575"));
             transactionType = "income";
         });
     }
     
-    private void setupCategorySelection() {
-        View.OnClickListener categoryClickListener = v -> {
-            // Reset all categories
-            resetCategorySelection();
-            
-            // Highlight selected category
-            v.setSelected(true);
-            v.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#E0E0E0")));
-            
-            // Get selected category
-            int id = v.getId();
-            if (id == R.id.category_food) {
-                selectedCategory = "Food";
-            } else if (id == R.id.category_social) {
-                selectedCategory = "Social";
-            } else if (id == R.id.category_traffic) {
-                selectedCategory = "Traffic";
-            } else if (id == R.id.category_shopping) {
-                selectedCategory = "Shopping";
-            } else if (id == R.id.category_grocery) {
-                selectedCategory = "Grocery";
-            } else if (id == R.id.category_education) {
-                selectedCategory = "Education";
-            } else if (id == R.id.category_bills) {
-                selectedCategory = "Bills";
-            } else if (id == R.id.category_rentals) {
-                selectedCategory = "Rentals";
-            } else if (id == R.id.category_medical) {
-                selectedCategory = "Medical";
-            } else if (id == R.id.category_investment) {
-                selectedCategory = "Investment";
-            } else if (id == R.id.category_gift) {
-                selectedCategory = "Gift";
-            } else if (id == R.id.category_other) {
-                selectedCategory = "Other";
-            }
-        };
+    private void setupCategoriesGrid() {
+        // Set up the RecyclerView with a GridLayoutManager
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 4);
+        categoriesGrid.setLayoutManager(layoutManager);
         
-        // Apply click listener to all categories
-        for (View categoryView : categoryViews) {
-            categoryView.setOnClickListener(categoryClickListener);
-        }
-        
-        // Highlight the default category (Food)
-        categoryViews[0].setSelected(true);
-        categoryViews[0].setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#E0E0E0")));
-    }
-    
-    private void resetCategorySelection() {
-        for (View categoryView : categoryViews) {
-            categoryView.setSelected(false);
-            categoryView.setBackgroundTintList(null);
-        }
+        // Create and set the adapter
+        CategoryAdapter adapter = new CategoryAdapter(category -> {
+            selectedCategory = category;
+            // You could show a toast or update UI to indicate selection
+            showToast("Selected category: " + category);
+        });
+        categoriesGrid.setAdapter(adapter);
     }
     
     private void setupDateTimePickers() {
@@ -222,7 +154,7 @@ public class AddTransactionActivity extends AppCompatActivity {
     }
     
     private void updateDateTimeButtons() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM, dd yyyy", Locale.getDefault());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
         
         dateButton.setText(dateFormat.format(selectedDate.getTime()));
@@ -240,21 +172,20 @@ public class AddTransactionActivity extends AppCompatActivity {
     }
     
     private boolean validateInputs() {
-        String amountStr = amountInput.getText().toString().trim();
-        
-        if (amountStr.isEmpty()) {
-            amountInput.setError("Amount is required");
+        String amount = amountInput.getText().toString().trim();
+        if (TextUtils.isEmpty(amount)) {
+            showToast("Please enter an amount");
             return false;
         }
         
         try {
-            double amount = Double.parseDouble(amountStr);
-            if (amount <= 0) {
-                amountInput.setError("Amount must be greater than 0");
+            double amountValue = Double.parseDouble(amount);
+            if (amountValue <= 0) {
+                showToast("Amount must be greater than 0");
                 return false;
             }
         } catch (NumberFormatException e) {
-            amountInput.setError("Invalid amount format");
+            showToast("Invalid amount format");
             return false;
         }
         
@@ -262,50 +193,33 @@ public class AddTransactionActivity extends AppCompatActivity {
     }
     
     private void saveTransaction() {
-        // Check authentication
         if (mAuth.getCurrentUser() == null) {
-            showToast("User not authenticated");
+            showToast("Please sign in to add transactions");
             return;
         }
         
-        String userId = mAuth.getCurrentUser().getUid();
-        String amountStr = amountInput.getText().toString().trim();
-        String note = noteInput.getText().toString().trim();
-        double amount = Double.parseDouble(amountStr);
-        
-        // Get title from note or use category as title
-        String title = note.isEmpty() ? selectedCategory : note;
-        
-        // Create transaction object
-        Map<String, Object> transactionData = new HashMap<>();
-        transactionData.put("title", title);
-        transactionData.put("amount", amount);
-        transactionData.put("date", selectedDate.getTime());
-        transactionData.put("type", transactionType);
-        transactionData.put("category", selectedCategory);
-        
-        // Save to Firestore using nested collection structure
-        db.collection("transaction")
-            .document(userId)
-            .collection("transactions")
-            .add(transactionData)
-            .addOnSuccessListener(documentReference -> {
-                // Return success result to calling activity
-                Intent resultIntent = new Intent();
-                resultIntent.putExtra("TRANSACTION_ID", documentReference.getId());
-                setResult(RESULT_OK, resultIntent);
-                
-                showToast("Transaction added successfully");
-                finish();
-            })
-            .addOnFailureListener(e -> {
-                String errorMessage = e.getMessage();
-                if (errorMessage != null && errorMessage.contains("permission")) {
-                    showToast("Permission denied. Please check your authentication.");
-                } else {
-                    showToast("Failed to add transaction: " + errorMessage);
-                }
-            });
+        // Create transaction data
+        Map<String, Object> transaction = new HashMap<>();
+        transaction.put("userId", mAuth.getCurrentUser().getUid());
+        transaction.put("amount", Double.parseDouble(amountInput.getText().toString().trim()));
+        transaction.put("type", transactionType);
+        transaction.put("category", selectedCategory);
+        transaction.put("note", noteInput.getText().toString().trim());
+        transaction.put("date", selectedDate.getTime());
+        transaction.put("createdAt", Calendar.getInstance().getTime());
+
+        // Save to Firestore under user's transactions collection
+        db.collection("users")
+                .document(mAuth.getCurrentUser().getUid())
+                .collection("transactions")
+                .add(transaction)
+                .addOnSuccessListener(documentReference -> {
+                    showToast("Transaction added successfully");
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    showToast("Failed to add transaction: " + e.getMessage());
+                });
     }
     
     private void showToast(String message) {

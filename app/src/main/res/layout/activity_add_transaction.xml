@@ -7,76 +7,85 @@
 
     <!-- Top App Bar -->
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
         app:elevation="0dp">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@android:color/white">
+            android:background="@android:color/white"
+            app:contentInsetStartWithNavigation="0dp"
+            app:layout_scrollFlags="scroll|enterAlways|snap">
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp">
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_cancel"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
                     android:text="Cancel"
-                    android:textSize="16sp"
-                    android:textColor="#000000"
-                    android:layout_alignParentStart="true" />
+                    android:textColor="#757575"
+                    android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/toolbar_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
                     android:text="Add Transaction"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:layout_centerInParent="true" />
+                    android:textColor="#212121"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_save"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Save"
-                    android:textSize="16sp"
-                    android:textColor="#4285F4"
                     android:layout_alignParentEnd="true"
-                    android:layout_marginEnd="16dp" />
+                    android:text="Save"
+                    android:textColor="#4285F4"
+                    android:textSize="16sp" />
             </RelativeLayout>
-        </androidx.appcompat.widget.Toolbar>
+        </com.google.android.material.appbar.MaterialToolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Main Content -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
         android:fillViewport="true"
+        android:scrollbars="none"
+        android:overScrollMode="never"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="32dp">
 
             <!-- Transaction Type Toggle -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="32dp"
                 app:cardCornerRadius="28dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#E0E0E0">
+                app:strokeColor="#E0E0E0"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -88,25 +97,25 @@
                         android:id="@+id/btn_expend"
                         android:layout_width="0dp"
                         android:layout_height="56dp"
+                        android:layout_margin="2dp"
                         android:layout_weight="1"
+                        android:backgroundTint="#1D4752"
                         android:text="Expend"
                         android:textColor="@android:color/white"
-                        android:backgroundTint="#1D4752"
-                        app:cornerRadius="24dp"
-                        android:layout_margin="2dp"/>
+                        app:cornerRadius="24dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_income"
                         android:layout_width="0dp"
                         android:layout_height="56dp"
+                        android:layout_margin="2dp"
                         android:layout_weight="1"
+                        android:backgroundTint="#FFFFFF"
                         android:text="Income"
                         android:textColor="#757575"
-                        android:backgroundTint="#FFFFFF"
                         app:cornerRadius="24dp"
-                        android:layout_margin="2dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="#E0E0E0"/>
+                        app:strokeColor="#E0E0E0"
+                        app:strokeWidth="1dp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -115,28 +124,28 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:text="Amount"
-                android:textSize="16sp"
-                android:textStyle="bold"
                 android:textColor="#212121"
-                android:layout_marginBottom="12dp"/>
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="32dp"
                 app:cardCornerRadius="28dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#E0E0E0">
+                app:strokeColor="#E0E0E0"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
                     android:background="@android:color/white"
-                    android:padding="16dp">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="20dp">
 
                     <EditText
                         android:id="@+id/et_transaction_amount"
@@ -147,14 +156,15 @@
                         android:hint="0"
                         android:inputType="numberDecimal"
                         android:textSize="32sp"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="USD"
                         android:textColor="#757575"
-                        android:textSize="18sp"/>
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -162,454 +172,102 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:text="Category"
-                android:textSize="16sp"
-                android:textStyle="bold"
                 android:textColor="#212121"
-                android:layout_marginBottom="12dp"/>
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-            <!-- Categories Grid - Row 1 -->
-            <LinearLayout
+            <!-- Categories Grid -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/categories_grid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="32dp"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:spanCount="4" />
 
-                <!-- Food -->
-                <LinearLayout
-                    android:id="@+id/category_food"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/circle_background_yellow"
-                        android:padding="16dp"
-                        android:src="@android:drawable/ic_menu_manage"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Food"
-                        android:textSize="14sp"
-                        android:layout_marginTop="6dp"/>
-                </LinearLayout>
-
-                <!-- Social -->
-                <LinearLayout
-                    android:id="@+id/category_social"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/circle_background_orange"
-                        android:padding="16dp"
-                        android:src="@android:drawable/ic_menu_share"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Social"
-                        android:textSize="14sp"
-                        android:layout_marginTop="6dp"/>
-                </LinearLayout>
-
-                <!-- Traffic -->
-                <LinearLayout
-                    android:id="@+id/category_traffic"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/circle_background_blue"
-                        android:padding="16dp"
-                        android:src="@android:drawable/ic_menu_directions"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Traffic"
-                        android:textSize="14sp"
-                        android:layout_marginTop="6dp"/>
-                </LinearLayout>
-
-                <!-- Shopping -->
-                <LinearLayout
-                    android:id="@+id/category_shopping"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/circle_background_pink"
-                        android:padding="16dp"
-                        android:src="@android:drawable/ic_menu_sort_by_size"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Shopping"
-                        android:textSize="14sp"
-                        android:layout_marginTop="6dp"/>
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- Categories Grid - Row 2 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="16dp">
-
-                <!-- Grocery -->
-                <LinearLayout
-                    android:id="@+id/category_grocery"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/circle_background_green"
-                        android:padding="16dp"
-                        android:src="@android:drawable/ic_menu_agenda"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Grocery"
-                        android:textSize="14sp"
-                        android:layout_marginTop="6dp"/>
-                </LinearLayout>
-
-                <!-- Education -->
-                <LinearLayout
-                    android:id="@+id/category_education"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/circle_background_purple"
-                        android:padding="16dp"
-                        android:src="@android:drawable/ic_menu_edit"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Education"
-                        android:textSize="14sp"
-                        android:layout_marginTop="6dp"/>
-                </LinearLayout>
-
-                <!-- Bills -->
-                <LinearLayout
-                    android:id="@+id/category_bills"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/circle_background_teal"
-                        android:padding="16dp"
-                        android:src="@android:drawable/ic_menu_day"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Bills"
-                        android:textSize="14sp"
-                        android:layout_marginTop="6dp"/>
-                </LinearLayout>
-
-                <!-- Rentals -->
-                <LinearLayout
-                    android:id="@+id/category_rentals"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/circle_background_amber"
-                        android:padding="16dp"
-                        android:src="@android:drawable/ic_menu_compass"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Rentals"
-                        android:textSize="14sp"
-                        android:layout_marginTop="6dp"/>
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- Categories Grid - Row 3 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="24dp">
-
-                <!-- Medical -->
-                <LinearLayout
-                    android:id="@+id/category_medical"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/circle_background_red"
-                        android:padding="16dp"
-                        android:src="@android:drawable/ic_menu_help"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Medical"
-                        android:textSize="14sp"
-                        android:layout_marginTop="6dp"/>
-                </LinearLayout>
-
-                <!-- Investment -->
-                <LinearLayout
-                    android:id="@+id/category_investment"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/circle_background_cyan"
-                        android:padding="16dp"
-                        android:src="@android:drawable/ic_menu_info_details"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Investment"
-                        android:textSize="14sp"
-                        android:layout_marginTop="6dp"/>
-                </LinearLayout>
-
-                <!-- Gift -->
-                <LinearLayout
-                    android:id="@+id/category_gift"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/circle_background_lavender"
-                        android:padding="16dp"
-                        android:src="@android:drawable/ic_menu_view"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Gift"
-                        android:textSize="14sp"
-                        android:layout_marginTop="6dp"/>
-                </LinearLayout>
-
-                <!-- Other -->
-                <LinearLayout
-                    android:id="@+id/category_other"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/circle_background_light_blue"
-                        android:padding="16dp"
-                        android:src="@android:drawable/ic_menu_more"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Other"
-                        android:textSize="14sp"
-                        android:layout_marginTop="6dp"/>
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- Budget -->
+            <!-- Date and Time -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Budget"
-                android:textSize="16sp"
-                android:textStyle="bold"
+                android:layout_marginBottom="16dp"
+                android:text="Date and Time"
                 android:textColor="#212121"
-                android:layout_marginBottom="12dp"/>
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#E0E0E0">
+                android:layout_marginBottom="32dp"
+                android:orientation="horizontal">
 
-                <LinearLayout
-                    android:id="@+id/budget_selector"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:background="@android:color/white"
-                    android:padding="16dp">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_date"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:text="Select Date"
+                    android:textColor="#212121"
+                    app:cornerRadius="28dp"
+                    app:icon="@android:drawable/ic_menu_my_calendar"
+                    app:iconGravity="textStart"
+                    app:iconTint="#212121"
+                    app:strokeColor="#E0E0E0" />
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Income1"
-                        android:textSize="16sp"/>
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@android:drawable/arrow_down_float"/>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_time"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="Select Time"
+                    android:textColor="#212121"
+                    app:cornerRadius="28dp"
+                    app:icon="@android:drawable/ic_menu_recent_history"
+                    app:iconGravity="textStart"
+                    app:iconTint="#212121"
+                    app:strokeColor="#E0E0E0" />
+            </LinearLayout>
 
             <!-- Note -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:text="Note"
-                android:textSize="16sp"
-                android:textStyle="bold"
                 android:textColor="#212121"
-                android:layout_marginBottom="12dp"/>
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="32dp"
                 app:cardCornerRadius="28dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#E0E0E0">
-                
+                app:strokeColor="#E0E0E0"
+                app:strokeWidth="1dp">
+
                 <EditText
-                    android:id="@+id/et_transaction_note"
+                    android:id="@+id/et_note"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Add a description"
-                    android:background="@android:color/white"
+                    android:layout_height="80dp"
+                    android:background="@null"
+                    android:gravity="top"
+                    android:hint="Add note"
                     android:padding="16dp"
-                    android:minHeight="80dp"
-                    android:gravity="top|start"
-                    android:inputType="textMultiLine"/>
+                    android:textSize="16sp" />
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Date -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Date"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="#212121"
-                android:layout_marginBottom="12dp"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="32dp">
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    app:cardCornerRadius="28dp"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#E0E0E0">
-                    
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_date"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:backgroundTint="@android:color/white"
-                        android:textColor="#000000"
-                        app:cornerRadius="28dp"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:text="April, 21 2025"/>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    app:cardCornerRadius="28dp"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#E0E0E0">
-                    
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_time"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:backgroundTint="@android:color/white"
-                        android:textColor="#000000"
-                        app:cornerRadius="28dp"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:text="15:10"/>
-                </com.google.android.material.card.MaterialCardView>
-            </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout> 
