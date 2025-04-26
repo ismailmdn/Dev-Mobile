@@ -1,5 +1,6 @@
 package com.example.projetguermah;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -74,15 +75,30 @@ public class TransactionsFragment extends Fragment implements TransactionAdapter
     private void loadTransactions() {
         showLoading(true);
         
-        db.collection("transactions")
-                .whereEqualTo("userId", mAuth.getCurrentUser().getUid())
+        if (mAuth.getCurrentUser() == null) {
+            showLoading(false);
+            showError("User not authenticated");
+            return;
+        }
+        
+        String userId = mAuth.getCurrentUser().getUid();
+        
+        // Use consistent collection structure: /transaction/{userId}/transactions/
+        db.collection("transaction")
+                .document(userId)
+                .collection("transactions")
+                .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     transactions.clear();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        Transaction transaction = document.toObject(Transaction.class);
-                        transaction.setId(document.getId());
-                        transactions.add(transaction);
+                        try {
+                            Transaction transaction = document.toObject(Transaction.class);
+                            transaction.setId(document.getId());
+                            transactions.add(transaction);
+                        } catch (Exception e) {
+                            showError("Error parsing transaction: " + e.getMessage());
+                        }
                     }
                     adapter.notifyDataSetChanged();
                     showLoading(false);
@@ -90,7 +106,12 @@ public class TransactionsFragment extends Fragment implements TransactionAdapter
                 })
                 .addOnFailureListener(e -> {
                     showLoading(false);
-                    showError("Failed to load transactions: " + e.getMessage());
+                    String errorMessage = e.getMessage();
+                    if (errorMessage != null && errorMessage.contains("permission")) {
+                        showError("Permission denied. Please check your authentication.");
+                    } else {
+                        showError("Failed to load transactions: " + errorMessage);
+                    }
                 });
     }
 
@@ -116,5 +137,46 @@ public class TransactionsFragment extends Fragment implements TransactionAdapter
     public void onTransactionClick(Transaction transaction) {
         // TODO: Implement transaction details/editing
         Toast.makeText(getContext(), "Transaction details will be implemented", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDeleteClick(Transaction transaction, int position) {
+        // Ask for confirmation before deletion
+        new AlertDialog.Builder(requireContext())
+            .setTitle("Delete Transaction")
+            .setMessage("Are you sure you want to delete this transaction?")
+            .setPositiveButton("Delete", (dialog, which) -> {
+                deleteTransaction(transaction, position);
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
+    }
+
+    private void deleteTransaction(Transaction transaction, int position) {
+        if (mAuth.getCurrentUser() == null) {
+            showError("You need to be logged in to delete transactions");
+            return;
+        }
+        
+        showLoading(true);
+        String userId = mAuth.getCurrentUser().getUid();
+        
+        db.collection("transaction")
+            .document(userId)
+            .collection("transactions")
+            .document(transaction.getId())
+            .delete()
+            .addOnSuccessListener(aVoid -> {
+                // Remove from local list
+                transactions.remove(position);
+                adapter.notifyItemRemoved(position);
+                updateEmptyState();
+                showLoading(false);
+                Toast.makeText(getContext(), "Transaction deleted successfully", Toast.LENGTH_SHORT).show();
+            })
+            .addOnFailureListener(e -> {
+                showLoading(false);
+                showError("Failed to delete transaction: " + e.getMessage());
+            });
     }
 } 

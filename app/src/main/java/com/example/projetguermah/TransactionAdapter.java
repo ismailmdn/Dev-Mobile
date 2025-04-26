@@ -3,6 +3,7 @@ package com.example.projetguermah;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,6 +19,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
     public interface OnTransactionClickListener {
         void onTransactionClick(Transaction transaction);
+        void onDeleteClick(Transaction transaction, int position);
     }
 
     public TransactionAdapter(List<Transaction> transactions, OnTransactionClickListener listener) {
@@ -66,6 +68,12 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                 listener.onTransactionClick(transaction);
             }
         });
+        
+        holder.deleteButton.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onDeleteClick(transaction, holder.getAdapterPosition());
+            }
+        });
     }
 
     @Override
@@ -78,6 +86,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         TextView categoryTextView;
         TextView amountTextView;
         TextView dateTextView;
+        ImageButton deleteButton;
 
         TransactionViewHolder(View itemView) {
             super(itemView);
@@ -85,6 +94,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             categoryTextView = itemView.findViewById(R.id.transaction_category);
             amountTextView = itemView.findViewById(R.id.transaction_amount);
             dateTextView = itemView.findViewById(R.id.transaction_date);
+            deleteButton = itemView.findViewById(R.id.delete_transaction_btn);
         }
     }
 } 

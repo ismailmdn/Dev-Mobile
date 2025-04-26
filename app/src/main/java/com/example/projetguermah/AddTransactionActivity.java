@@ -198,23 +198,25 @@ public class AddTransactionActivity extends AppCompatActivity {
             return;
         }
         
+        String userId = mAuth.getCurrentUser().getUid();
+        
         // Create transaction data
         Map<String, Object> transaction = new HashMap<>();
-        transaction.put("userId", mAuth.getCurrentUser().getUid());
+        transaction.put("title", noteInput.getText().toString().trim());
         transaction.put("amount", Double.parseDouble(amountInput.getText().toString().trim()));
         transaction.put("type", transactionType);
         transaction.put("category", selectedCategory);
-        transaction.put("note", noteInput.getText().toString().trim());
         transaction.put("date", selectedDate.getTime());
         transaction.put("createdAt", Calendar.getInstance().getTime());
 
-        // Save to Firestore under user's transactions collection
-        db.collection("users")
-                .document(mAuth.getCurrentUser().getUid())
+        // Save to Firestore using the consistent collection pattern
+        db.collection("transaction")
+                .document(userId)
                 .collection("transactions")
                 .add(transaction)
                 .addOnSuccessListener(documentReference -> {
                     showToast("Transaction added successfully");
+                    setResult(RESULT_OK);
                     finish();
                 })
                 .addOnFailureListener(e -> {
