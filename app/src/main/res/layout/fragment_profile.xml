@@ -1,208 +1,518 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/profileFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F5F7FA"
     android:padding="16dp"
-    android:background="#FFFFFF"
+    android:clickable="true"
+    android:focusable="true"
     tools:context=".ProfileFragment">
 
-    <!-- Header: Username's Budget + Dots Icon -->
-    <TextView
-        android:id="@+id/budgetTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Username's Budget"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="#000000" />
-
-    <ImageView
-        android:id="@+id/menuIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_alignParentEnd="true"
-        android:src="@drawable/dots"
-        android:contentDescription="Menu" />
-
-    <!-- Popup Menu -->
-    <LinearLayout
-        android:id="@+id/menuPopup"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@id/menuIcon"
-        android:layout_below="@id/menuIcon"
-        android:orientation="vertical"
-        android:background="#FFFFFF"
-        android:padding="8dp"
-        android:elevation="6dp"
-        android:visibility="gone">
-
-        <Button
-            android:id="@+id/logoutButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Logout" />
-    </LinearLayout>
-
-    <!-- Month and Year Selector -->
-    <LinearLayout
-        android:id="@+id/monthYearSelector"
-        android:layout_below="@id/budgetTitle"
-        android:layout_marginTop="24dp"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:orientation="horizontal"
-        android:background="@drawable/bg_rounded_box"
-        android:padding="10dp"
-        android:gravity="center_vertical">
-
-        <!-- Spinner for Month -->
-        <Spinner
-            android:id="@+id/monthSpinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <!-- TextView for Year -->
-        <TextView
-            android:id="@+id/yearText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="2025"
-            android:textColor="#000000"
-            android:textSize="16sp"
-            android:layout_marginStart="8dp"/>
-    </LinearLayout>
-
-    <!-- Budget Label -->
-    <TextView
-        android:id="@+id/budgetLabel"
-        android:layout_below="@id/monthYearSelector"
-        android:layout_marginTop="32dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="The Budget:"
-        android:textSize="18sp"
-        android:textColor="#000000"
-        android:textStyle="bold" />
-
-    <!-- Budget Value and Edit Icon -->
-    <LinearLayout
-        android:id="@+id/budgetValueContainer"
-        android:layout_below="@id/budgetLabel"
-        android:layout_marginTop="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+    <!-- Header with title and menu button -->
+    <RelativeLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/budgetValue"
+            android:id="@+id/budgetTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="$1234.56"
-            android:textSize="22sp"
-            android:textColor="#333333" />
+            android:text="My Budget"
+            android:textColor="#2D3748"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
         <ImageView
-            android:id="@+id/editIcon"
+            android:id="@+id/menuIcon"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/edit"
-            android:contentDescription="Edit Budget" />
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/dots"
+            android:contentDescription="Menu" />
+
+        <LinearLayout
+            android:id="@+id/menuPopup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@id/menuIcon"
+            android:layout_below="@id/menuIcon"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="8dp"
+            android:elevation="6dp"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/logoutButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Logout" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <!-- Month/Year Picker Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/monthYearCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/headerLayout"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
+        app:strokeColor="#E2E8F0"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/currentMonthYearText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="May 2025"
+                android:textAlignment="center"
+                android:textColor="#2D3748"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/selectMonthButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#4299E1"
+                android:text="Select Month"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Budget Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/budgetCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/monthYearCard"
+        android:layout_marginTop="24dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Budget"
+                    android:textColor="#4A5568"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:id="@+id/editBudgetIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/edit"
+                    android:contentDescription="Edit Budget" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/budgetValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="$0.00"
+                android:textColor="#2D3748"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/budgetProgressBar"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_marginTop="12dp"
+                app:trackColor="#E2E8F0"
+                app:trackCornerRadius="4dp"
+                app:trackThickness="8dp"
+                app:indicatorColor="#4299E1" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Stats Cards - 2 Rows -->
+    <LinearLayout
+        android:id="@+id/statsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/budgetCard"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical">
+
+        <!-- First Row - Income & Expenses -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <!-- Income Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Income"
+                        android:textColor="#4A5568"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/incomeValue"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="$0.00"
+                        android:textColor="#38A169"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Expenses Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Expenses"
+                        android:textColor="#4A5568"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/expensesValue"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="$0.00"
+                        android:textColor="#E53E3E"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- Second Row - Savings (Centered) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:maxWidth="300dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Savings"
+                            android:textColor="#4A5568"
+                            android:textSize="16sp" />
+
+                        <ImageView
+                            android:id="@+id/editSavingsIcon"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_alignParentEnd="true"
+                            android:src="@drawable/edit"
+                            android:contentDescription="Edit Savings" />
+                    </RelativeLayout>
+
+                    <TextView
+                        android:id="@+id/savingsValue"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="$0.00"
+                        android:textColor="#38A169"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- Expenses -->
-    <TextView
-        android:id="@+id/expensesLabel"
-        android:layout_below="@id/budgetValueContainer"
-        android:layout_marginTop="24dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Expenses:"
-        android:textSize="18sp"
-        android:textColor="#000000"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/expensesValue"
-        android:layout_below="@id/expensesLabel"
-        android:layout_marginTop="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="$567.89"
-        android:textSize="20sp"
-        android:textColor="#FF4444" />
-
-    <!-- Savings -->
-    <TextView
-        android:id="@+id/savingsLabel"
-        android:layout_below="@id/expensesValue"
-        android:layout_marginTop="24dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Savings:"
-        android:textSize="18sp"
-        android:textColor="#000000"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/savingsValue"
-        android:layout_below="@id/savingsLabel"
-        android:layout_marginTop="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="$666.67"
-        android:textSize="20sp"
-        android:textColor="#4CAF50" />
-
-    <!-- Edit Budget Popup -->
+    <!-- Month Picker Dialog -->
     <RelativeLayout
-        android:id="@+id/editPopup"
+        android:id="@+id/monthPickerContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#99000000"
         android:visibility="gone"
-        android:elevation="10dp">
+        android:clickable="true"
+        android:focusable="true">
 
         <LinearLayout
-            android:layout_centerInParent="true"
-            android:orientation="vertical"
-            android:layout_width="300dp"
+            android:id="@+id/monthPickerLayout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_rounded_box"
-            android:padding="16dp">
+            android:layout_centerInParent="true"
+            android:layout_margin="24dp"
+            android:background="@drawable/bg_rounded_dialog"
+            android:elevation="8dp"
+            android:orientation="vertical"
+            android:padding="24dp">
 
-            <EditText
-                android:id="@+id/editBudgetInput"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter new budget"
-                android:inputType="numberDecimal" />
+                android:text="Select Month"
+                android:textAlignment="center"
+                android:textColor="#2D3748"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                android:gravity="end">
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+
+                <Spinner
+                    android:id="@+id/monthSpinner"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <Spinner
+                    android:id="@+id/yearSpinner"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/saveBudgetButton"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/cancelMonthButton"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Save" />
-
-                <Button
-                    android:id="@+id/cancelBudgetButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="Cancel"
-                    android:layout_marginStart="8dp" />
+                    style="@style/Widget.AppCompat.Button.Borderless" />
+
+                <Button
+                    android:id="@+id/confirmMonthButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="OK"
+                    android:backgroundTint="#4299E1"
+                    android:textColor="#FFFFFF" />
             </LinearLayout>
         </LinearLayout>
     </RelativeLayout>
 
+    <!-- Edit Budget Dialog -->
+    <RelativeLayout
+        android:id="@+id/editBudgetPopup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            app:cardCornerRadius="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Edit Budget"
+                    android:textAlignment="center"
+                    android:textColor="#2D3748"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editBudgetInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Budget amount"
+                        android:inputType="numberDecimal" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/cancelBudgetButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Cancel"
+                        style="@style/Widget.AppCompat.Button.Borderless" />
+
+                    <Button
+                        android:id="@+id/saveBudgetButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:text="Save"
+                        android:backgroundTint="#4299E1"
+                        android:textColor="#FFFFFF" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </RelativeLayout>
+
+    <!-- Edit Savings Dialog -->
+    <RelativeLayout
+        android:id="@+id/editSavingsPopup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            app:cardCornerRadius="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Edit Savings"
+                    android:textAlignment="center"
+                    android:textColor="#2D3748"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editSavingsInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Savings amount"
+                        android:inputType="numberDecimal" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/cancelSavingsButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Cancel"
+                        style="@style/Widget.AppCompat.Button.Borderless" />
+
+                    <Button
+                        android:id="@+id/saveSavingsButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:text="Save"
+                        android:backgroundTint="#4299E1"
+                        android:textColor="#FFFFFF" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </RelativeLayout>
 </RelativeLayout>
