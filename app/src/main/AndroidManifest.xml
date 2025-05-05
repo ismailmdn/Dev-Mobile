@@ -36,5 +36,8 @@
             android:exported="false"
             android:theme="@style/Theme.ProjetGuermah.NoActionBar" />
 
+        <activity android:name=".SavingsGoalsActivity" />
+        <activity android:name=".SavingChallengesActivity" />
+        <activity android:name=".AddGoalActivity" />
     </application>
 </manifest>

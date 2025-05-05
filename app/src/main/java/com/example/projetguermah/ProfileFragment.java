@@ -1,13 +1,12 @@
 package com.example.projetguermah;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,10 +17,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import android.content.Intent;
-import android.content.SharedPreferences;
-
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.progressindicator.LinearProgressIndicator;
@@ -31,14 +28,11 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -58,9 +52,7 @@ public class ProfileFragment extends Fragment {
     private EditText editBudgetInput, editSavingsInput;
     private Button saveBudgetButton, cancelBudgetButton, saveSavingsButton, cancelSavingsButton;
     private View editBudgetIcon, editSavingsIcon;
-
     private ImageView editMenuIcon;
-
     private RelativeLayout profileFragment;
 
     // Data
@@ -75,7 +67,12 @@ public class ProfileFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        return inflater.inflate(R.layout.fragment_profile, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -130,6 +127,38 @@ public class ProfileFragment extends Fragment {
             loadFinanceData();
         }
 
+        // Set up click listeners
+        selectMonthButton.setOnClickListener(v -> showMonthPicker());
+        confirmMonthButton.setOnClickListener(v -> confirmMonthSelection());
+        cancelMonthButton.setOnClickListener(v -> hideMonthPicker());
+        editBudgetIcon.setOnClickListener(v -> showEditBudgetDialog());
+        editSavingsIcon.setOnClickListener(v -> showEditSavingsDialog());
+        saveBudgetButton.setOnClickListener(v -> saveBudget());
+        cancelBudgetButton.setOnClickListener(v -> editBudgetPopup.setVisibility(View.GONE));
+        saveSavingsButton.setOnClickListener(v -> saveSavings());
+        cancelSavingsButton.setOnClickListener(v -> editSavingsPopup.setVisibility(View.GONE));
+
+        // Menu button click
+        editMenuIcon.setOnClickListener(v -> {
+            if (menuPopup.getVisibility() == View.VISIBLE) {
+                menuPopup.setVisibility(View.GONE);
+            } else {
+                menuPopup.setVisibility(View.VISIBLE);
+            }
+        });
+
+        // Menu item clicks
+        view.findViewById(R.id.savingsGoalsButton).setOnClickListener(v -> {
+            menuPopup.setVisibility(View.GONE);
+            startActivity(new Intent(getActivity(), SavingsGoalsActivity.class));
+        });
+
+        view.findViewById(R.id.savingChallengesButton).setOnClickListener(v -> {
+            menuPopup.setVisibility(View.GONE);
+            startActivity(new Intent(getActivity(), SavingChallengesActivity.class));
+        });
+
+        // Logout button
         logoutButton.setOnClickListener(v -> {
             SharedPreferences prefs = requireActivity().getSharedPreferences("MyAppPrefs", 0);
             SharedPreferences.Editor editor = prefs.edit();
@@ -142,39 +171,15 @@ public class ProfileFragment extends Fragment {
             requireActivity().finish();
         });
 
-
-        // Set up click listeners
-        selectMonthButton.setOnClickListener(v -> showMonthPicker());
-        confirmMonthButton.setOnClickListener(v -> confirmMonthSelection());
-        cancelMonthButton.setOnClickListener(v -> hideMonthPicker());
-        editBudgetIcon.setOnClickListener(v -> showEditBudgetDialog());
-        editSavingsIcon.setOnClickListener(v -> showEditSavingsDialog());
-        saveBudgetButton.setOnClickListener(v -> saveBudget());
-        cancelBudgetButton.setOnClickListener(v -> editBudgetPopup.setVisibility(View.GONE));
-        saveSavingsButton.setOnClickListener(v -> saveSavings());
-        cancelSavingsButton.setOnClickListener(v -> editSavingsPopup.setVisibility(View.GONE));
-
         // Handle clicks outside popups
         monthPickerContainer.setOnClickListener(v -> hideMonthPicker());
         editBudgetPopup.setOnClickListener(v -> editBudgetPopup.setVisibility(View.GONE));
         editSavingsPopup.setOnClickListener(v -> editSavingsPopup.setVisibility(View.GONE));
-
-        editMenuIcon.setOnClickListener(v -> {
-            if (menuPopup.getVisibility() == View.VISIBLE) {
-                menuPopup.setVisibility(View.GONE);
-            } else {
-                menuPopup.setVisibility(View.VISIBLE);
-                editBudgetIcon.setVisibility(View.GONE);
-            }
-        });
-
         profileFragment.setOnClickListener(v -> {
             if (menuPopup.getVisibility() == View.VISIBLE) {
                 menuPopup.setVisibility(View.GONE);
             }
         });
-
-        return view;
     }
 
     private void setupMonthSpinner() {
@@ -189,10 +194,10 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setupYearSpinner() {
-        List<String> years = new ArrayList<>();
         int thisYear = Calendar.getInstance().get(Calendar.YEAR);
-        for (int i = thisYear - 5; i <= thisYear + 5; i++) {
-            years.add(String.valueOf(i));
+        String[] years = new String[11];
+        for (int i = 0; i < 11; i++) {
+            years[i] = String.valueOf(thisYear - 5 + i);
         }
 
         ArrayAdapter<String> yearAdapter = new ArrayAdapter<>(
@@ -204,32 +209,15 @@ public class ProfileFragment extends Fragment {
         yearSpinner.setAdapter(yearAdapter);
 
         // Set current year as selected
-        int currentYearPosition = years.indexOf(String.valueOf(selectedYear));
-        if (currentYearPosition >= 0) {
-            yearSpinner.setSelection(currentYearPosition);
-        }
+        yearSpinner.setSelection(5);
     }
 
     private void showMonthPicker() {
         monthPickerContainer.setVisibility(View.VISIBLE);
-        monthPickerContainer.setAlpha(0f);
-        monthPickerContainer.animate()
-                .alpha(1f)
-                .setDuration(200)
-                .start();
     }
 
     private void hideMonthPicker() {
-        monthPickerContainer.animate()
-                .alpha(0f)
-                .setDuration(200)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        monthPickerContainer.setVisibility(View.GONE);
-                    }
-                })
-                .start();
+        monthPickerContainer.setVisibility(View.GONE);
     }
 
     private void confirmMonthSelection() {
@@ -272,7 +260,6 @@ public class ProfileFragment extends Fragment {
     private void loadFinanceData() {
         String documentId = String.format(Locale.getDefault(), "%04d-%02d", selectedYear, selectedMonth + 1);
 
-        // First load existing finance data
         db.collection("finance")
                 .document(uid)
                 .collection("months")
@@ -280,23 +267,16 @@ public class ProfileFragment extends Fragment {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        // Document exists, load data
                         Number budgetNumber = documentSnapshot.getDouble("budget");
                         Number savingsNumber = documentSnapshot.getDouble("savings");
 
                         budget = budgetNumber != null ? budgetNumber.doubleValue() : 0;
                         savings = savingsNumber != null ? savingsNumber.doubleValue() : 0;
-
-                        // Now calculate expenses and income from transactions
-                        calculateTransactions();
                     } else {
-                        // Document doesn't exist, create with default values
                         budget = 0;
                         savings = 0;
-
-                        // Calculate expenses and income from transactions
-                        calculateTransactions();
                     }
+                    calculateTransactions();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(requireContext(), "Failed to load finance data", Toast.LENGTH_SHORT).show();
@@ -305,12 +285,7 @@ public class ProfileFragment extends Fragment {
 
     private void calculateTransactions() {
         FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) {
-            Toast.makeText(requireContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String userId = user.getUid();
+        if (user == null) return;
 
         // Calculate date range for the selected month
         Calendar calendar = Calendar.getInstance();
@@ -323,55 +298,37 @@ public class ProfileFragment extends Fragment {
         expenses = 0;
         income = 0;
 
-        // Load all transactions (using your working method)
         db.collection("transaction")
                 .document(uid)
                 .collection("transactions")
                 .orderBy("date", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Transaction> allTransactions = new ArrayList<>();
-
-                    // Convert all documents to Transaction objects
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         try {
                             Transaction transaction = document.toObject(Transaction.class);
-                            transaction.setId(document.getId());
-                            allTransactions.add(transaction);
+                            Date transactionDate = transaction.getDate();
+
+                            if (transactionDate != null &&
+                                    !transactionDate.before(startOfMonth) &&
+                                    !transactionDate.after(endOfMonth)) {
+
+                                if ("income".equals(transaction.getType())) {
+                                    income += transaction.getAmount();
+                                } else if ("expense".equals(transaction.getType())) {
+                                    expenses += transaction.getAmount();
+                                }
+                            }
                         } catch (Exception e) {
                             Log.e("TransactionCalc", "Error parsing transaction", e);
                         }
                     }
-
-                    // Now filter and calculate
-                    for (Transaction transaction : allTransactions) {
-                        Date transactionDate = transaction.getDate();
-
-                        // Check if transaction is within our month
-                        if (transactionDate != null &&
-                                !transactionDate.before(startOfMonth) &&
-                                !transactionDate.after(endOfMonth)) {
-
-                            if ("income".equals(transaction.getType())) {
-                                income += transaction.getAmount();
-                            } else if ("expense".equals(transaction.getType())) {
-                                expenses += transaction.getAmount();
-                            }
-                        }
-                    }
-
-
                     updateFinanceDocument();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(requireContext(),
-                            "Failed to load transactions: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
-                    Log.e("TransactionCalc", "Error loading transactions", e);
+                    Toast.makeText(requireContext(), "Failed to load transactions", Toast.LENGTH_SHORT).show();
                 });
     }
-
-
 
     private void updateFinanceDocument() {
         String documentId = String.format(Locale.getDefault(), "%04d-%02d", selectedYear, selectedMonth + 1);
@@ -395,13 +352,11 @@ public class ProfileFragment extends Fragment {
     }
 
     private void updateUI() {
-        // Update text views
         budgetValue.setText(String.format(Locale.getDefault(), "$%.2f", budget));
         expensesValue.setText(String.format(Locale.getDefault(), "$%.2f", expenses));
         savingsValue.setText(String.format(Locale.getDefault(), "$%.2f", savings));
         incomeValue.setText(String.format(Locale.getDefault(), "$%.2f", income));
 
-        // Update progress bar
         if (budget > 0) {
             int progress = (int) ((expenses / budget) * 100);
             budgetProgressBar.setProgress(Math.min(progress, 100));
@@ -411,38 +366,24 @@ public class ProfileFragment extends Fragment {
     }
 
     private void saveBudget() {
-        String input = editBudgetInput.getText().toString().trim();
-        if (input.isEmpty()) {
-            editBudgetInput.setError("Please enter a budget");
-            return;
-        }
-
         try {
-            double newBudget = Double.parseDouble(input);
-            budget = newBudget;
+            budget = Double.parseDouble(editBudgetInput.getText().toString());
             updateFinanceDocument();
             editBudgetPopup.setVisibility(View.GONE);
             Toast.makeText(requireContext(), "Budget updated", Toast.LENGTH_SHORT).show();
         } catch (NumberFormatException e) {
-            editBudgetInput.setError("Invalid number format");
+            editBudgetInput.setError("Invalid number");
         }
     }
 
     private void saveSavings() {
-        String input = editSavingsInput.getText().toString().trim();
-        if (input.isEmpty()) {
-            editSavingsInput.setError("Please enter savings amount");
-            return;
-        }
-
         try {
-            double newSavings = Double.parseDouble(input);
-            savings = newSavings;
+            savings = Double.parseDouble(editSavingsInput.getText().toString());
             updateFinanceDocument();
             editSavingsPopup.setVisibility(View.GONE);
             Toast.makeText(requireContext(), "Savings updated", Toast.LENGTH_SHORT).show();
         } catch (NumberFormatException e) {
-            editSavingsInput.setError("Invalid number format");
+            editSavingsInput.setError("Invalid number");
         }
     }
 }

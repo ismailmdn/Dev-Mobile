@@ -48,6 +48,18 @@
             android:visibility="gone">
 
             <Button
+                android:id="@+id/savingsGoalsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Savings Goals" />
+
+            <Button
+                android:id="@+id/savingChallengesButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Saving Challenges" />
+
+            <Button
                 android:id="@+id/logoutButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

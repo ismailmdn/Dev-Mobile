@@ -19,4 +19,11 @@
         <item>November</item>
         <item>December</item>
     </string-array>
+    <string name="add_new_goal">Add New Goal</string>
+    <string name="join_challenge">Join Challenge</string>
+    <string name="goal_name_hint">Goal name</string>
+    <string name="target_amount_hint">Target amount</string>
+    <string name="target_date_hint">Target date (MM/YYYY)</string>
+    <string name="savings_goals">Savings Goals</string>
+    <string name="saving_challenges">Saving Challenges</string>
 </resources>
