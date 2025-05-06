@@ -35,5 +35,24 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:textColor="#4A5568" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:layout_marginTop="8dp"
+            app:trackColor="#E2E8F0"
+            app:trackCornerRadius="4dp"
+            app:trackThickness="8dp"
+            app:indicatorColor="#4299E1" />
+
+        <Button
+            android:id="@+id/actionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_gravity="end"
+            android:textAllCaps="true"
+            android:textColor="#FFFFFF"/>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
