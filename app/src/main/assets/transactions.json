@@ -1,0 +1,23 @@
+[
+    {
+      "title": "Salary Deposit",
+      "amount": 2500.00,
+      "type": "income",
+      "category": "Salary",
+      "date": 1716940800000
+    },
+    {
+      "title": "Grocery",
+      "amount": 85.75,
+      "type": "expense",
+      "category": "Food",
+      "date": 1717200000000
+    },
+    {
+      "title": "Shopping",
+      "amount": 120.50,
+      "type": "expense",
+      "category": "Utilities",
+      "date": 1717027200000
+    }
+  ]

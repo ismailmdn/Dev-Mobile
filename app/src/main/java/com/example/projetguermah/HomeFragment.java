@@ -9,12 +9,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+// sync
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import android.widget.Toast;
+
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -48,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class HomeFragment extends Fragment {
     private FirebaseFirestore db;
@@ -82,6 +94,10 @@ public class HomeFragment extends Fragment {
     private Map<String, Double> monthlyBudgets = new HashMap<>();
     private List<String> availableMonths = new ArrayList<>();
 
+    private static final int PICK_JSON_FILE = 1001;
+    private Button btnSyncBank;
+    private TextView tvSyncStatus;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
@@ -101,6 +117,8 @@ public class HomeFragment extends Fragment {
 
         // Load data
         loadData();
+        btnSyncBank.setOnClickListener(v -> simulateBankSync());
+
 
         return view;
     }
@@ -119,6 +137,8 @@ public class HomeFragment extends Fragment {
         savingsProgressText = view.findViewById(R.id.savingsProgressText);
         savingsTrendIcon = view.findViewById(R.id.savingsTrendIcon);
         budgetComparisonContainer = view.findViewById(R.id.budgetComparisonContainer);
+        btnSyncBank = view.findViewById(R.id.btnSyncBank);
+        tvSyncStatus = view.findViewById(R.id.tvSyncStatus);
     }
 
     private void setupTimeRangeSpinner() {
@@ -572,6 +592,70 @@ public class HomeFragment extends Fragment {
             case "Last 6 months": return 6;
             case "Last year": return 12;
             default: return 3;
+        }
+    }
+    private void simulateBankSync() {
+        try {
+            // Load JSON from assets
+            InputStream is = getActivity().getAssets().open("transactions.json");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            String jsonString = sb.toString();
+            is.close();
+
+            // Process the transactions
+            processJsonTransactions(jsonString);
+
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Error syncing with bank: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e("BankSync", "Error loading test data", e);
+        }
+    }
+
+    // Update your processJsonTransactions method (using AtomicInteger as previously shown)
+    private void processJsonTransactions(String jsonString) {
+        try {
+            JSONArray transactionsArray = new JSONArray(jsonString);
+            AtomicInteger importedCount = new AtomicInteger(0);
+
+            for (int i = 0; i < transactionsArray.length(); i++) {
+                JSONObject jsonTransaction = transactionsArray.getJSONObject(i);
+
+                // Create transaction map (same as before)
+                Map<String, Object> transaction = new HashMap<>();
+                transaction.put("title", jsonTransaction.getString("title"));
+                transaction.put("amount", jsonTransaction.getDouble("amount"));
+                transaction.put("type", jsonTransaction.getString("type"));
+                transaction.put("category", jsonTransaction.optString("category", "Uncategorized"));
+                transaction.put("date", new Date(jsonTransaction.getLong("date")));
+                transaction.put("createdAt", Calendar.getInstance().getTime());
+
+                // Save to Firestore
+                db.collection("transaction")
+                        .document(userId)
+                        .collection("transactions")
+                        .add(transaction)
+                        .addOnSuccessListener(documentReference -> {
+                            int count = importedCount.incrementAndGet();
+                            if (count == transactionsArray.length()) {
+                                String message = "Bank sync complete! Imported " + count + " transactions";
+                                tvSyncStatus.setText("Last sync: " + new SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(new Date()));
+                                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                                loadData(); // Refresh the UI
+                            }
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("BankSync", "Error saving transaction", e);
+                        });
+            }
+
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Error processing transactions", Toast.LENGTH_LONG).show();
+            Log.e("BankSync", "Error processing JSON", e);
         }
     }
 }

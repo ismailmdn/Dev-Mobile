@@ -301,5 +301,50 @@
                 android:orientation="vertical" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+
+        <!-- Sync with Bank Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Bank Sync"
+                    android:textColor="#2D3748"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <Button
+                    android:id="@+id/btnSyncBank"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Sync with My Bank Account"
+                    android:textAllCaps="false"
+                    android:backgroundTint="@color/colorPrimary"
+                    android:textColor="@android:color/white"/>
+
+                <TextView
+                    android:id="@+id/tvSyncStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Last sync: Never"
+                    android:textColor="#4A5568"
+                    android:textSize="14sp"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 </LinearLayout>
     </ScrollView>
