@@ -10,4 +10,10 @@
     <color name="colorPrimary">#4299E1</color>
     <color name="colorAccent">#38A169</color>
     <color name="colorSuccess">#48BB78</color>
+    <color name="teal_primary">#008080</color>
+    <color name="teal_light">#4DB6AC</color>
+    <color name="text_dark">#333333</color>
+    <color name="text_hint">#808080</color>
+    <color name="white_70">#B3FFFFFF</color>
+    <color name="teal_dark">#006666</color>
 </resources>

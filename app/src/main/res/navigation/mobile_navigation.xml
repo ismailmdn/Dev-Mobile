@@ -18,9 +18,16 @@
         tools:layout="@layout/fragment_transaction" />
 
     <fragment
+        android:id="@+id/navigation_saving"
+        android:name="com.example.projetguermah.SavingFragment"
+        android:label="Savings"
+        tools:layout="@layout/fragment_saving" />
+
+    <fragment
         android:id="@+id/navigation_profile"
         android:name="com.example.projetguermah.ProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_profile" />
+
 
 </navigation> 

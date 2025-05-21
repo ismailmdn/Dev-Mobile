@@ -17,8 +17,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,21 +38,34 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
     private FirebaseFirestore db;
     private RecyclerView recyclerView;
     private ProgressBar loadingProgress;
+    private LinearProgressIndicator loadingMoreProgress;
     private TextView emptyStateText;
     private TransactionAdapter adapter;
     private List<Transaction> transactions = new ArrayList<>();
     private List<Transaction> allTransactions = new ArrayList<>();
     private FloatingActionButton fabAddTransaction;
-    private MaterialButton btnFilterMonth, btnFilterType;
+    private MaterialButton btnFilterMonth, btnFilterType, btnFilterCategory;
     private static final int TRANSACTION_DETAILS_REQUEST_CODE = 1002;
+    private static final int PAGE_SIZE = 8; // Number of items to load per page
 
-    private static final int ADD_TRANSACTION_REQUEST_CODE = 1001;
+    // Pagination variables
+    private DocumentSnapshot lastVisible;
+    private boolean isLastItemReached;
+    private boolean isLoading;
 
     // Filter variables
     private String selectedMonth = null;
     private String selectedType = null;
+    private String selectedCategory = null;
     private final SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
     private final SimpleDateFormat firestoreMonthFormat = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
+
+    // Categories
+    private final String[] categories = {
+            "Other", "Gift", "Investment", "Medical", "Rentals",
+            "Bills", "Education", "Grocery", "Shopping", "Traffic",
+            "Social", "Food"
+    };
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -70,25 +86,46 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
         // Initialize views
         recyclerView = view.findViewById(R.id.transactions_recycler_view);
         loadingProgress = view.findViewById(R.id.loading_progress);
+        loadingMoreProgress = view.findViewById(R.id.loading_more_progress);
         emptyStateText = view.findViewById(R.id.empty_state_text);
         fabAddTransaction = view.findViewById(R.id.fab_add_transaction);
         btnFilterMonth = view.findViewById(R.id.btn_filter_month);
         btnFilterType = view.findViewById(R.id.btn_filter_type);
+        btnFilterCategory = view.findViewById(R.id.btn_filter_category);
 
         // Setup RecyclerView
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
         adapter = new TransactionAdapter(transactions, this);
         recyclerView.setAdapter(adapter);
 
-        // Setup FAB to launch AddTransactionActivity
-        fabAddTransaction.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), AddTransactionActivity.class);
-            startActivityForResult(intent, ADD_TRANSACTION_REQUEST_CODE);
+        // Setup scroll listener for pagination
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                int visibleItemCount = layoutManager.getChildCount();
+                int totalItemCount = layoutManager.getItemCount();
+                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+
+                if (!isLoading && !isLastItemReached) {
+                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                            && firstVisibleItemPosition >= 0
+                            && totalItemCount >= PAGE_SIZE) {
+                        loadMoreTransactions();
+                    }
+                }
+            }
         });
+
+        // Setup FAB
+        fabAddTransaction.setOnClickListener(v -> showAddTransactionDialog());
 
         // Setup filter buttons
         btnFilterMonth.setOnClickListener(v -> showMonthFilterDialog());
         btnFilterType.setOnClickListener(v -> showTypeFilterDialog());
+        btnFilterCategory.setOnClickListener(v -> showCategoryFilterDialog());
 
         // Check if user is logged in
         if (mAuth.getCurrentUser() == null) {
@@ -96,11 +133,24 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
             return;
         }
 
-        // Load transactions
+        // Load initial transactions
+        resetPagination();
         loadTransactions();
     }
 
+    private void resetPagination() {
+        lastVisible = null;
+        isLastItemReached = false;
+        isLoading = false;
+        allTransactions.clear();
+        transactions.clear();
+        adapter.notifyDataSetChanged();
+    }
+
     private void loadTransactions() {
+        if (isLoading) return;
+
+        isLoading = true;
         showLoading(true);
 
         if (mAuth.getCurrentUser() == null) {
@@ -110,27 +160,41 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
         }
 
         String userId = mAuth.getCurrentUser().getUid();
-
-        db.collection("transaction")
+        Query query = db.collection("transaction")
                 .document(userId)
                 .collection("transactions")
-                .orderBy("date", com.google.firebase.firestore.Query.Direction.DESCENDING)
-                .get()
+                .orderBy("date", Query.Direction.DESCENDING)
+                .limit(PAGE_SIZE);
+
+        query.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    allTransactions.clear();
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        try {
-                            Transaction transaction = document.toObject(Transaction.class);
-                            transaction.setId(document.getId());
-                            allTransactions.add(transaction);
-                        } catch (Exception e) {
-                            showError("Error parsing transaction: " + e.getMessage());
-                        }
-                    }
-                    applyFilters();
+                    isLoading = false;
                     showLoading(false);
+
+                    if (queryDocumentSnapshots.size() > 0) {
+                        allTransactions.clear();
+                        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                            try {
+                                Transaction transaction = document.toObject(Transaction.class);
+                                transaction.setId(document.getId());
+                                allTransactions.add(transaction);
+                            } catch (Exception e) {
+                                showError("Error parsing transaction: " + e.getMessage());
+                            }
+                        }
+                        lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size() - 1);
+                        applyFilters();
+
+                        if (queryDocumentSnapshots.size() < PAGE_SIZE) {
+                            isLastItemReached = true;
+                        }
+                    } else {
+                        isLastItemReached = true;
+                        updateEmptyState();
+                    }
                 })
                 .addOnFailureListener(e -> {
+                    isLoading = false;
                     showLoading(false);
                     String errorMessage = e.getMessage();
                     if (errorMessage != null && errorMessage.contains("permission")) {
@@ -141,12 +205,59 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
                 });
     }
 
+    private void loadMoreTransactions() {
+        if (isLoading || isLastItemReached) return;
+
+        isLoading = true;
+        loadingMoreProgress.setVisibility(View.VISIBLE);
+
+        String userId = mAuth.getCurrentUser().getUid();
+        Query query = db.collection("transaction")
+                .document(userId)
+                .collection("transactions")
+                .orderBy("date", Query.Direction.DESCENDING)
+                .startAfter(lastVisible)
+                .limit(PAGE_SIZE);
+
+        query.get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    isLoading = false;
+                    loadingMoreProgress.setVisibility(View.GONE);
+
+                    if (queryDocumentSnapshots.size() > 0) {
+                        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                            try {
+                                Transaction transaction = document.toObject(Transaction.class);
+                                transaction.setId(document.getId());
+                                allTransactions.add(transaction);
+                            } catch (Exception e) {
+                                showError("Error parsing transaction: " + e.getMessage());
+                            }
+                        }
+                        lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size() - 1);
+                        applyFilters();
+
+                        if (queryDocumentSnapshots.size() < PAGE_SIZE) {
+                            isLastItemReached = true;
+                        }
+                    } else {
+                        isLastItemReached = true;
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    isLoading = false;
+                    loadingMoreProgress.setVisibility(View.GONE);
+                    showError("Failed to load more transactions: " + e.getMessage());
+                });
+    }
+
     private void applyFilters() {
         transactions.clear();
 
         for (Transaction transaction : allTransactions) {
             boolean matchesMonth = true;
             boolean matchesType = true;
+            boolean matchesCategory = true;
 
             // Apply month filter if selected
             if (selectedMonth != null) {
@@ -159,8 +270,13 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
                 matchesType = selectedType.equalsIgnoreCase(transaction.getType());
             }
 
-            // Add to filtered list if matches both filters
-            if (matchesMonth && matchesType) {
+            // Apply category filter if selected
+            if (selectedCategory != null) {
+                matchesCategory = selectedCategory.equalsIgnoreCase(transaction.getCategory());
+            }
+
+            // Add to filtered list if matches all filters
+            if (matchesMonth && matchesType && matchesCategory) {
                 transactions.add(transaction);
             }
         }
@@ -186,6 +302,9 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
         // Update type filter button text
         btnFilterType.setText(selectedType == null ? "All Types" :
                 selectedType.equalsIgnoreCase("income") ? "Income" : "Expense");
+
+        // Update category filter button text
+        btnFilterCategory.setText(selectedCategory == null ? "All Categories" : selectedCategory);
     }
 
     private void showMonthFilterDialog() {
@@ -230,7 +349,8 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
             } else {
                 selectedMonth = monthKeys[which - 1];
             }
-            applyFilters();
+            resetPagination();
+            loadTransactions();
             dialog.dismiss();
         });
 
@@ -258,7 +378,40 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
             } else {
                 selectedType = types[which].toLowerCase();
             }
-            applyFilters();
+            resetPagination();
+            loadTransactions();
+            dialog.dismiss();
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    private void showCategoryFilterDialog() {
+        // Create array with "All Categories" first
+        String[] allCategories = new String[categories.length + 1];
+        allCategories[0] = "All Categories";
+        System.arraycopy(categories, 0, allCategories, 1, categories.length);
+
+        int checkedItem = 0; // "All Categories" is selected by default
+        if (selectedCategory != null) {
+            for (int i = 0; i < categories.length; i++) {
+                if (categories[i].equalsIgnoreCase(selectedCategory)) {
+                    checkedItem = i + 1;
+                    break;
+                }
+            }
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Filter by Category");
+        builder.setSingleChoiceItems(allCategories, checkedItem, (dialog, which) -> {
+            if (which == 0) {
+                selectedCategory = null;
+            } else {
+                selectedCategory = allCategories[which];
+            }
+            resetPagination();
+            loadTransactions();
             dialog.dismiss();
         });
         builder.setNegativeButton("Cancel", null);
@@ -266,7 +419,6 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
     }
 
     private void showAddTransactionDialog() {
-        // TODO: Implement dialog for adding new transaction
         Toast.makeText(getContext(), "Add transaction dialog will be implemented", Toast.LENGTH_SHORT).show();
     }
 
@@ -282,7 +434,7 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
 
     private void updateEmptyState() {
         emptyStateText.setVisibility(transactions.isEmpty() ? View.VISIBLE : View.GONE);
-        emptyStateText.setText(selectedMonth == null && selectedType == null ?
+        emptyStateText.setText(selectedMonth == null && selectedType == null && selectedCategory == null ?
                 "No transactions yet" : "No matching transactions");
     }
 
@@ -335,16 +487,13 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
                 });
     }
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == ADD_TRANSACTION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            // Refresh transactions list after adding a new one
-            loadTransactions();
-        } else if (requestCode == TRANSACTION_DETAILS_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+        if (requestCode == TRANSACTION_DETAILS_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             // Refresh transactions list after potentially deleting a transaction
+            resetPagination();
             loadTransactions();
         }
     }

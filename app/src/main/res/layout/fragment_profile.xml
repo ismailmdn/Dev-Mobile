@@ -35,35 +35,44 @@
             android:src="@drawable/dots"
             android:contentDescription="Menu" />
 
+
         <LinearLayout
             android:id="@+id/menuPopup"
-            android:layout_width="wrap_content"
+            android:layout_width="170dp"
             android:layout_height="wrap_content"
             android:layout_alignEnd="@id/menuIcon"
             android:layout_below="@id/menuIcon"
             android:orientation="vertical"
             android:background="#FFFFFF"
             android:padding="8dp"
-            android:elevation="6dp"
+            android:elevation="16dp"
             android:visibility="gone">
 
-            <Button
-                android:id="@+id/savingsGoalsButton"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/logout"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Savings Goals" />
+                android:orientation="horizontal"
+                android:background="@drawable/clickable_row_background"
+                android:padding="16dp"
+                android:elevation="6dp"
+                android:minHeight="20dp">
 
-            <Button
-                android:id="@+id/savingChallengesButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Saving Challenges" />
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/out"
+                    android:contentDescription="Logout" />
 
-            <Button
-                android:id="@+id/logoutButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Logout" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Logout"
+                    android:textSize="18sp"
+                    android:textColor="@color/black"
+                    android:layout_marginStart="16dp"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
         </LinearLayout>
     </RelativeLayout>
 
@@ -527,4 +536,15 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </RelativeLayout>
+
+    <Button
+        android:id="@+id/generateReportButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/statsLayout"
+        android:layout_marginTop="24dp"
+        android:backgroundTint="#4299E1"
+        android:text="Generate PDF Report"
+        android:textColor="#FFFFFF" />
+
 </RelativeLayout>

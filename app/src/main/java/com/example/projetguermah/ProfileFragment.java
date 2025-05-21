@@ -1,7 +1,12 @@
 package com.example.projetguermah;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.pdf.PdfDocument;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,10 +22,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
+import com.example.projetguermah.model.SavingsGoal;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -29,10 +38,15 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -44,16 +58,17 @@ public class ProfileFragment extends Fragment {
     // UI Elements
     private TextView budgetTitle, currentMonthYearText, budgetValue, expensesValue, savingsValue, incomeValue;
     private LinearProgressIndicator budgetProgressBar;
-    private Button selectMonthButton, confirmMonthButton, cancelMonthButton, logoutButton;
+    private Button selectMonthButton, confirmMonthButton, cancelMonthButton;
     private Spinner monthSpinner, yearSpinner;
     private RelativeLayout monthPickerContainer;
-    private LinearLayout monthPickerLayout, menuPopup;
+    private LinearLayout monthPickerLayout, menuPopup, logoutButton;
     private RelativeLayout editBudgetPopup, editSavingsPopup;
     private EditText editBudgetInput, editSavingsInput;
     private Button saveBudgetButton, cancelBudgetButton, saveSavingsButton, cancelSavingsButton;
     private View editBudgetIcon, editSavingsIcon;
     private ImageView editMenuIcon;
     private RelativeLayout profileFragment;
+    private Button generateReportButton;
 
     // Data
     private String uid;
@@ -79,7 +94,6 @@ public class ProfileFragment extends Fragment {
 
         // Initialize UI elements
         profileFragment = view.findViewById(R.id.profileFragment);
-
         budgetTitle = view.findViewById(R.id.budgetTitle);
         currentMonthYearText = view.findViewById(R.id.currentMonthYearText);
         budgetValue = view.findViewById(R.id.budgetValue);
@@ -105,8 +119,9 @@ public class ProfileFragment extends Fragment {
         editBudgetIcon = view.findViewById(R.id.editBudgetIcon);
         editSavingsIcon = view.findViewById(R.id.editSavingsIcon);
         menuPopup = view.findViewById(R.id.menuPopup);
-        logoutButton = view.findViewById(R.id.logoutButton);
+        logoutButton = view.findViewById(R.id.logout);
         editMenuIcon = view.findViewById(R.id.menuIcon);
+        generateReportButton = view.findViewById(R.id.generateReportButton);
 
         // Set current month and year
         Calendar calendar = Calendar.getInstance();
@@ -137,6 +152,7 @@ public class ProfileFragment extends Fragment {
         cancelBudgetButton.setOnClickListener(v -> editBudgetPopup.setVisibility(View.GONE));
         saveSavingsButton.setOnClickListener(v -> saveSavings());
         cancelSavingsButton.setOnClickListener(v -> editSavingsPopup.setVisibility(View.GONE));
+        generateReportButton.setOnClickListener(v -> generateAndDownloadPdf());
 
         // Menu button click
         editMenuIcon.setOnClickListener(v -> {
@@ -145,17 +161,6 @@ public class ProfileFragment extends Fragment {
             } else {
                 menuPopup.setVisibility(View.VISIBLE);
             }
-        });
-
-        // Menu item clicks
-        view.findViewById(R.id.savingsGoalsButton).setOnClickListener(v -> {
-            menuPopup.setVisibility(View.GONE);
-            startActivity(new Intent(getActivity(), SavingsGoalsActivity.class));
-        });
-
-        view.findViewById(R.id.savingChallengesButton).setOnClickListener(v -> {
-            menuPopup.setVisibility(View.GONE);
-            startActivity(new Intent(getActivity(), SavingChallengesActivity.class));
         });
 
         // Logout button
@@ -180,6 +185,159 @@ public class ProfileFragment extends Fragment {
                 menuPopup.setVisibility(View.GONE);
             }
         });
+    }
+
+    private void generateAndDownloadPdf() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String userId = FirebaseAuth.getInstance().getUid();
+        if (userId == null) return;
+
+        // Create a temporary file
+        String fileName = "Financial_Report_" + currentMonthYear.replace(" ", "_") + ".pdf";
+        File file = new File(requireContext().getExternalCacheDir(), fileName);
+
+        // Step 1: Get user info
+        db.collection("users").document(userId).get().addOnSuccessListener(userDoc -> {
+            String name = userDoc.getString("name");
+            String email = userDoc.getString("email");
+
+
+
+            // Step 2: Get transactions
+            db.collection("transaction").document(userId).collection("transactions")
+                    .get().addOnSuccessListener(transactionDocs -> {
+                        Map<String, Double> expenseMap = new HashMap<>();
+                        Map<String, Double> incomeMap = new HashMap<>();
+                        // Use final arrays to hold the values that need to be modified
+                        final double[] totalExpensesHolder = {0.0};
+                        final double[] totalIncomeHolder = {0.0};
+
+                        for (QueryDocumentSnapshot doc : transactionDocs) {
+                            String type = doc.getString("type");
+                            String category = doc.getString("category");
+                            Double amount = doc.getDouble("amount");
+                            Date date = doc.getDate("date");
+
+                            if (amount == null || date == null) continue;
+
+                            String txMonth = new SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(date);
+                            if (!txMonth.equals(currentMonthYear)) continue;
+
+                            String key = category != null ? category : "Uncategorized";
+
+                            if ("expense".equals(type)) {
+                                totalExpensesHolder[0] += amount;
+                                expenseMap.put(key, expenseMap.getOrDefault(key, 0.0) + amount);
+                            } else if ("income".equals(type)) {
+                                totalIncomeHolder[0] += amount;
+                                incomeMap.put(key, incomeMap.getOrDefault(key, 0.0) + amount);
+                            }
+                        }
+
+                        // Step 3: Get savings goals
+                        db.collection("finance").document(userId).collection("savingsGoals")
+                                .get().addOnSuccessListener(goalDocs -> {
+                                    List<SavingsGoal> goals = new ArrayList<>();
+                                    for (QueryDocumentSnapshot goalDoc : goalDocs) {
+                                        SavingsGoal goal = goalDoc.toObject(SavingsGoal.class);
+                                        goals.add(goal);
+                                    }
+
+                                    // Step 4: Generate PDF
+                                    PdfDocument pdf = new PdfDocument();
+                                    Paint paint = new Paint();
+                                    final int x = 40;
+                                    final int[] yHolder = {50};
+                                    PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(595, 842, 1).create();
+                                    PdfDocument.Page page = pdf.startPage(pageInfo);
+                                    Canvas canvas = page.getCanvas();
+
+                                    paint.setTextSize(18);
+                                    canvas.drawText("Financial Report - " + currentMonthYear, x, yHolder[0], paint);
+                                    yHolder[0] += 30;
+                                    paint.setTextSize(14);
+                                    canvas.drawText("Name: " + name, x, yHolder[0], paint);
+                                    yHolder[0] += 20;
+                                    canvas.drawText("Email: " + email, x, yHolder[0], paint);
+                                    yHolder[0] += 30;
+
+                                    canvas.drawText("Summary", x, yHolder[0], paint);
+                                    yHolder[0] += 20;
+                                    canvas.drawText("Budget: $" + String.format("%.2f", budget), x, yHolder[0], paint);
+                                    yHolder[0] += 20;
+                                    canvas.drawText("Total Savings: $" + String.format("%.2f", savings), x, yHolder[0], paint);
+                                    yHolder[0] += 20;
+                                    canvas.drawText("Total Income: $" + String.format("%.2f", totalIncomeHolder[0]), x, yHolder[0], paint);
+                                    yHolder[0] += 20;
+                                    canvas.drawText("Total Expenses: $" + String.format("%.2f", totalExpensesHolder[0]), x, yHolder[0], paint);
+                                    yHolder[0] += 20;
+                                    canvas.drawText("Balance: $" + String.format("%.2f", totalIncomeHolder[0] - totalExpensesHolder[0]), x, yHolder[0], paint);
+                                    yHolder[0] += 30;
+
+                                    canvas.drawText("Expenses by Category", x, yHolder[0], paint);
+                                    yHolder[0] += 20;
+                                    for (Map.Entry<String, Double> entry : expenseMap.entrySet()) {
+                                        canvas.drawText(entry.getKey() + ": $" + String.format("%.2f", entry.getValue()), x + 20, yHolder[0], paint);
+                                        yHolder[0] += 20;
+                                    }
+                                    yHolder[0] += 10;
+
+                                    canvas.drawText("Income by Category", x, yHolder[0], paint);
+                                    yHolder[0] += 20;
+                                    for (Map.Entry<String, Double> entry : incomeMap.entrySet()) {
+                                        canvas.drawText(entry.getKey() + ": $" + String.format("%.2f", entry.getValue()), x + 20, yHolder[0], paint);
+                                        yHolder[0] += 20;
+                                    }
+                                    yHolder[0] += 30;
+
+                                    canvas.drawText("Savings Goals", x, yHolder[0], paint);
+                                    yHolder[0] += 20;
+                                    for (SavingsGoal goal : goals) {
+                                        double progress = goal.getCurrentAmount() / goal.getTargetAmount() * 100;
+                                        canvas.drawText(goal.getName() + " - $" + goal.getCurrentAmount() + " / $" + goal.getTargetAmount() +
+                                                " (" + String.format("%.1f", progress) + "%)", x + 20, yHolder[0], paint);
+                                        yHolder[0] += 20;
+                                    }
+
+                                    pdf.finishPage(page);
+
+                                    // Step 5: Save to file
+                                    try {
+                                        FileOutputStream fos = new FileOutputStream(file);
+                                        pdf.writeTo(fos);
+                                        fos.close();
+                                        pdf.close();
+
+                                        // Share the PDF file
+                                        sharePdfFile(file);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                        Toast.makeText(requireContext(), "Error saving PDF", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    });
+        });
+    }
+
+    private void sharePdfFile(File file) {
+        Uri contentUri = FileProvider.getUriForFile(
+                requireContext(),
+                requireContext().getPackageName() + ".provider",
+                file
+        );
+
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("application/pdf");
+        shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        // Create a chooser intent
+        Intent chooser = Intent.createChooser(shareIntent, "Save PDF Report");
+        try {
+            startActivity(chooser);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "No app available to handle PDF", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupMonthSpinner() {
@@ -282,6 +440,8 @@ public class ProfileFragment extends Fragment {
                     Toast.makeText(requireContext(), "Failed to load finance data", Toast.LENGTH_SHORT).show();
                 });
     }
+
+
 
     private void calculateTransactions() {
         FirebaseUser user = mAuth.getCurrentUser();
