@@ -354,8 +354,7 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
             } else {
                 selectedMonth = monthKeys[which - 1];
             }
-            resetPagination();
-            loadTransactions();
+            applyFilters();
             dialog.dismiss();
         });
 
