@@ -46,6 +46,8 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
     private FloatingActionButton fabAddTransaction;
     private MaterialButton btnFilterMonth, btnFilterType, btnFilterCategory;
     private static final int TRANSACTION_DETAILS_REQUEST_CODE = 1002;
+
+    private static final int ADD_TRANSACTION_REQUEST_CODE = 1001;
     private static final int PAGE_SIZE = 8; // Number of items to load per page
 
     // Pagination variables
@@ -120,7 +122,10 @@ public class TransactionFragment extends Fragment implements TransactionAdapter.
         });
 
         // Setup FAB
-        fabAddTransaction.setOnClickListener(v -> showAddTransactionDialog());
+        fabAddTransaction.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), AddTransactionActivity.class);
+            startActivityForResult(intent, ADD_TRANSACTION_REQUEST_CODE);
+        });
 
         // Setup filter buttons
         btnFilterMonth.setOnClickListener(v -> showMonthFilterDialog());
