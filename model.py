@@ -8,6 +8,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+# DQN Agent definition
 class DQNAgent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
@@ -60,6 +61,7 @@ STATE_SIZE = 10
 ACTION_SIZE = 5
 agent = DQNAgent(STATE_SIZE, ACTION_SIZE)
 
+# Action templates
 ACTION_MEANINGS = {
     0: "Reduce your spending in the {category} category by {amount}€ this month to free up funds for other priorities.",
     1: "Increase your savings by {amount}€ to help reach your financial goal '{goal}' faster.",
@@ -73,12 +75,9 @@ def get_recommendation():
     try:
         data = request.json
         user_state = preprocess_data(data)
-        num_recommendations = 3  # Number of recommendations to return
+        num_recommendations = 3
 
-        # Predict Q-values for the user state
         q_values = agent.model.predict(user_state.reshape(1, -1), verbose=0)[0]
-
-        # Get top 3 actions indices with highest Q-values
         top_actions_indices = q_values.argsort()[-num_recommendations:][::-1]
 
         recommendations = []
@@ -104,6 +103,7 @@ def get_recommendation():
                 "confidences": [float(q_values[a]) for a in top_actions_indices]
             }
         })
+
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
@@ -111,13 +111,11 @@ def get_recommendation():
 def process_feedback():
     try:
         data = request.json
-
         context = data['context']
         feedback = data['feedback']
-
         state = np.array(context['state'])
 
-        # Handle feedback for multiple actions by picking the first one
+        # Determine which action to reward
         if 'action' in context:
             action = context['action']
             confidence = context.get('confidence', 1.0)
@@ -125,8 +123,7 @@ def process_feedback():
             action = context['actions'][0]
             confidence = context['confidences'][0]
 
-        new_state = state  # Placeholder for next state
-
+        new_state = state  # Simplified; in a real system, use actual post-feedback state
         reward = calculate_reward(feedback, context)
 
         agent.remember(state, action, reward, new_state, False)
@@ -156,25 +153,20 @@ def personalize_recommendation(action, data):
         category = max(data['category_spending'].items(), key=lambda x: x[1])[0]
         amount = min(30, max(5, int(data['category_spending'][category] * 0.15)))
         return ACTION_MEANINGS[action].format(category=category, amount=amount)
-
     elif action == 1:
         goal = max(data['saving_goals'], key=lambda g: g['target'] - g['current'])
         amount = min(100, max(10, (goal['target'] - goal['current']) / 6))
         return ACTION_MEANINGS[action].format(goal=goal['name'], amount=round(amount, 2))
-
     elif action == 2:
         weekly_limit = int(sum(data['category_spending'].values()) / 4 * 0.8)
         return ACTION_MEANINGS[action].format(amount=weekly_limit)
-
     elif action == 3:
         category = min(data['category_spending'].items(), key=lambda x: x[1])[0]
         days = random.choice([3, 5, 7])
         return ACTION_MEANINGS[action].format(category=category, days=days)
-
     elif action == 4:
         percent = round((data['monthly_savings'] / max(1, data['monthly_income'])) * 100 + 5, 1)
         return ACTION_MEANINGS[action].format(percent=percent)
-
     return "Generic recommendation"
 
 def calculate_reward(feedback, context):
@@ -188,5 +180,6 @@ def calculate_reward(feedback, context):
         return 2.0
     return 0.0
 
+# Fixed: Correct main block
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
