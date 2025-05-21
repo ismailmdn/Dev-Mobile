@@ -7,11 +7,18 @@
 
     <item
         android:id="@+id/navigation_transactions"
-        android:icon="@android:drawable/ic_menu_agenda"
+        android:icon="@drawable/transact"
         android:title="Transactions" />
+
+    <item
+        android:id="@+id/navigation_saving"
+        android:icon="@drawable/wallet"
+        android:title="Savings" />
 
     <item
         android:id="@+id/navigation_profile"
         android:icon="@drawable/ic_profile"
         android:title="Profile" />
+
+
 </menu>

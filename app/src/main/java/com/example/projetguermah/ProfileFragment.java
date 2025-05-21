@@ -44,10 +44,10 @@ public class ProfileFragment extends Fragment {
     // UI Elements
     private TextView budgetTitle, currentMonthYearText, budgetValue, expensesValue, savingsValue, incomeValue;
     private LinearProgressIndicator budgetProgressBar;
-    private Button selectMonthButton, confirmMonthButton, cancelMonthButton, logoutButton;
+    private Button selectMonthButton, confirmMonthButton, cancelMonthButton;
     private Spinner monthSpinner, yearSpinner;
     private RelativeLayout monthPickerContainer;
-    private LinearLayout monthPickerLayout, menuPopup;
+    private LinearLayout monthPickerLayout, menuPopup, logoutButton;
     private RelativeLayout editBudgetPopup, editSavingsPopup;
     private EditText editBudgetInput, editSavingsInput;
     private Button saveBudgetButton, cancelBudgetButton, saveSavingsButton, cancelSavingsButton;
@@ -105,7 +105,7 @@ public class ProfileFragment extends Fragment {
         editBudgetIcon = view.findViewById(R.id.editBudgetIcon);
         editSavingsIcon = view.findViewById(R.id.editSavingsIcon);
         menuPopup = view.findViewById(R.id.menuPopup);
-        logoutButton = view.findViewById(R.id.logoutButton);
+        logoutButton = view.findViewById(R.id.logout);
         editMenuIcon = view.findViewById(R.id.menuIcon);
 
         // Set current month and year
@@ -147,16 +147,7 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        // Menu item clicks
-        view.findViewById(R.id.savingsGoalsButton).setOnClickListener(v -> {
-            menuPopup.setVisibility(View.GONE);
-            startActivity(new Intent(getActivity(), SavingsGoalsActivity.class));
-        });
 
-        view.findViewById(R.id.savingChallengesButton).setOnClickListener(v -> {
-            menuPopup.setVisibility(View.GONE);
-            startActivity(new Intent(getActivity(), SavingChallengesActivity.class));
-        });
 
         // Logout button
         logoutButton.setOnClickListener(v -> {
