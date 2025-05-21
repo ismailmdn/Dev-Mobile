@@ -63,4 +63,36 @@
             android:fontFamily="sans-serif-medium" />
     </LinearLayout>
 
+
+    <!-- Row 3 - Recommendations -->
+    <LinearLayout
+        android:id="@+id/row_recommendation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/clickable_row_background"
+        android:padding="16dp"
+        android:gravity="center_vertical"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginTop="12dp">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/goal"
+            android:contentDescription="Recommendation" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Go to Recommendations"
+            android:textSize="18sp"
+            android:textColor="@color/black"
+            android:layout_marginStart="16dp"
+            android:fontFamily="sans-serif-medium" />
+
+    </LinearLayout>
+
+
 </LinearLayout>
